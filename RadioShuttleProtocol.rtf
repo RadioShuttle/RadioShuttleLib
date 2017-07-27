@@ -1,0 +1,171 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1265\cocoasubrtf210
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red255\green0\blue0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww20480\viewh19120\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\b\fs28 \cf0 The \cf2 RadioShuttle protocol\cf0 \
+
+\b0 \
+The protocol is designed to send little messages between two or more device\cf2 s. For simplification, we call the pair 
+\i node
+\i0  and 
+\i station
+\i0 . He\cf0 re is the communication order:\
+\
+
+\b a) S\cf2 imple on-demand message (RS_Node_\cf0 Online/RS_Node_Checking/RS_Node_Offline)\
+
+\b0 1. Node sends a message request before sending the data, containing only the 
+\f1\fs26 \CocoaLigature0 RadioHeader.\
+  \'93MF_Respons\cf2 e\'94 must be switched off in the flags. The header contains\
+  the msgSize in the used RadioHeader, declaring hereby the expected data size,\
+  the app ID, a msgID, and a response Window.\
+\
+2. The response from the station should be sent immediately with the\
+   \'93MF_Response\'94 flag. In case the response cannot be sent\
+   immediately, the response window is used by the station for the\
+   scheduled time to send the response. In case the station cannot\
+   handle the app it stays quiet and forgets about this request. The station\
+   response may contain the flag \'93MF_SwitchOptions\'94 which allows turning on \
+   additional options (channel, spreading factor and windowScale). An empty \
+   options field means no change.\cf0 \
+\
+3. After the node has received the station response, it knows when it is allowed \
+   to send the final message data. The stations provided respWindow tells\
+   the node when to send the da\cf2 ta (usually when there is no other traffic scheduled).\
+   The data message can contain the \'93flag MF_MoreDataToCome\'94, to indicate that\
+   there are more messages pending for this app, In this case the station\
+   sends a confirmation message (see 4.) with a new respW\cf0 indow to send the\
+   next data message.\
+   \
+4. Optional c\cf2 onfirmation message. In case the request contains the \
+   flag \'93MF_SentCompletedConfirmed\'94 or \'93MF_MoreDataToCome\'94 the station must\
+   confirm the reception using the \'93MF_RecvDataConfirmed\'94 flag in a \
+   radio header response when requested. In case of \'93MF_MoreDataToCome\'94\
+   the response message has be to sent with a new respWindow to\
+   allow the node to send the next message. \cf0 \
+\
+Example:\
+Node	Station\
+- - - >		Node to Station message request (\'93RadioHeader\'94 with 12 or 16 bytes)\
+< - - -		Station to Node response (only \'93RadioHeader\'94 with response window time)\
+Channel switching may apply if \'93MF_SwitchOptions\'94 is specified\
+- - - >		Node data to Station (communication completed, header + data)\
+< - - -		Optionally acknowledge (when RadioHeader contains \'93
+\fs22 MF_NeedsConfirm\'94)
+\fs26 \
+\
+\
+\
+
+\f0\b\fs28 \CocoaLigature1 b) Simple \cf2 on-demand message RS_StationBasic/RS_StationServer\
+
+\b0 As the stations have an own re\cf0 cording when the air is busy they can just send messages\
+anytime when there is no scheduled traffic for a given time window.\
+
+\b \
+c) Receiving messages for RS_Node_Online\
+
+\b0 \cf2 As these types of node are always powered on, they stay always in receive mode
+\f1\fs26 \CocoaLigature0 ,
+\f0\fs28 \CocoaLigature1  which\
+means they can handle message requests as described. The station basically sends a \
+message to the 
+\f1\fs26 \CocoaLigature0 \'93
+\f0\fs28 \CocoaLigature1 RS_Node_Online
+\f1\fs26 \CocoaLigature0 \'94
+\f0\fs28 \CocoaLigature1  including\cf0  the data because the station knows when \
+the air is free to send messages.\
+
+\f1\fs26 \CocoaLigature0 \
+Example:\
+Node	Station\
+< - - -		Station to Node message request (RadioHeader with 12 or 16 bytes)\
+Channel switching may apply i\cf2 f \'93MF_SwitchOptions\'94 are speci\cf0 fied\
+- - - >		Node to Station response (only RadioHeader with response window time = 0)\
+< - - -		Station to Node_Online (Request with data, header + data)\
+- - - >		Optionally acknowledge (when RadioHeader contains \'93
+\fs22 MF_NeedsConfirm\'94)
+\fs26 \
+\
+\
+
+\f0\b\fs28 \CocoaLigature1 d) Receiving messages for RS_Node_Offline/RS_Node_Checking\
+
+\b0 The n\cf2 ode 
+\f1\fs26 \CocoaLigature0 \'93
+\f0\fs28 \CocoaLigature1 RS_Node_Offline
+\f1\fs26 \CocoaLigature0 \'94
+\f0\fs28 \CocoaLigature1  is completely turned off (sleep mode) unless it starts. During the sleep period it will not be able to receive messages, unless it wakes up and sends a message request.\
+\
+The \'93RS_Node_Checking\'94 can send a checking window time slot where it repeatedly turns into receive\
+mode
+\f1\fs26 \CocoaLigature0 ,
+\f0\fs28 \CocoaLigature1  to allow listening to a RadioHeader packet at a specified time, e.g. every 90.010 seconds. The response of the checking window includes the current timestamp in milliseconds to allow to use correct sending slots. From time to time the checking node should repeat the checking window requests to update its timestamp in milliseconds. The time slot resolution is in milliseconds.\
+In case 
+\f1\fs26 \CocoaLigature0 \'93
+\f0\fs28 \CocoaLigature1 RS_Node_Checking
+\f1\fs26 \CocoaLigature0 \'94
+\f0\fs28 \CocoaLigature1  receives responses from multiple stations it should use the response from the station with the best rssi and the second best rssi signal. (Main and backup stations.)\
+The checking node should be able to request the specified checking window, e.g. 6500 ms
+\f1\fs26 \CocoaLigature0 ,
+\f0\fs28 \CocoaLigature1 \
+and the station should respond with a window equal or less. The checking node should enter only in receive mode for reading the preamble and a few bytes (CAD detection). If no signal is active it\
+goes to sleep until the next checking period arrives. (The duration of the preamble d\cf0 etection depends in the spreading factor and bandwid\cf2 th.)\cf3 \
+\cf0 \
+
+\b Res\cf2 ponse windows\
+
+\b0 To keep it simple without syncing the time of all devices, the response window is specified in milliseconds, the window time starts counting after the complete packet has been received. The sender needs to take into account the air duration of the packet, the receiver starts counting the response window after it received the message. The packet RadioHeader response window allo\cf0 ws windows of up to 2048 ms, the \
+full RadioHeader allows 65536 ms. The option \'93
+\f1\fs26 \CocoaLigature0 MF_SwitchOptions\'94 allows a winScale scaling which will multiply the windows size.\
+\pard\tx543\pardeftab543\pardirnatural\partightenfactor0
+
+\fs22 \cf0 winScale 1 uses respWindow * 1\
+winScale 2 uses respWindow * 2\
+winScale 3 uses respWindow * 3\
+\'85\
+winScale 15 use respWindow * 15
+\fs26 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+\cf0 \
+\
+
+\f0\b\fs28 \CocoaLigature1 Passw\cf2 ord authentication\
+
+\b0 Each app can use an optional password when specified with the RegisterApplication() call. The password can be a simple string or a block of binary data. For binary data it is required to specify the password length parameter. A 16 byte long random password is recommended or even 32 bytes to avoid simple password attacks. The password can be empty (NULL) which means there is no password authentication. If the app  password is specified it must be identical on all nodes and station communicating together. When the password is set, the node must call Connect() with the app ID and the remote station ID. The password is never transferred directly over the air, instead of the client receives a random number which is used to create a hash code of the password and send the hash product for authentication to the station which compares the product with its password/random number hash.\
+The RadioSecurityInterface specifies an API for providing the pas\cf0 sword hashing and data encryption algorithm. It uses SHA256 for passwords and AES128 for content encryption.\
+\
+
+\b Message content encryption\
+
+\b0 \cf2 If passwords are specified (see Password Authentication), message data encryption can be enabled per 
+\f1\fs26 \CocoaLigature0 \'93
+\f0\fs28 \CocoaLigature1 SendMsg()
+\f1\fs26 \CocoaLigature0 \'94
+\f0\fs28 \CocoaLigature1  call specifying \'93MF_Encrypted\'94 in the flags field. For encrypting the data the RadioSecurityInterface provided security implementation uses AES 128-bit which ensures nobody in the middle can decrypt the messages and send fake messages. For non-encrypted messages the size of an app message can be as little as one byte. Encrypted messages are automatically padded to a multiple of 128-bit which mea\cf0 ns at 16 bytes per message.\
+\
+Encrypted messages considerations/disadvantages\
+- Minimum data size is 16 bytes (consider\cf2  that this is a 50 ms data transfer overhead using SF7, with SF11 it is many times longer).\
+- The communication works only between one node and one station (connected pair)\
+  Non-encrypted messages can be sent to multiple stations (e.g.: broadcast messages for device ID 0)\
+  which can be processed by any station supporting this app ID, which allows failover solutions.\
+- For simple data like a temperature sensor
+\f1\fs26 \CocoaLigature0 ,
+\f0\fs28 \CocoaLigature1  or similar
+\f1\fs26 \CocoaLigature0 ,
+\f0\fs28 \CocoaLigature1  it may not be required to use encrypted messages, however for security concerned messages (e.g. door alarm, light switch) encrypted messages are a must have.\
+\cf0 \
+
+\b Device IDs\
+
+\b0 Each node communicating with the RadioShuttle protocol mus\cf2 t have a unique number \'96\'a0each node as well as each station. Think about this like MAC addresses. This unique device IDs are required to allow secure and reliable communication. RadioShuttle licenses will find the device ID labeled on the RadioShuttle enabled board with an access code
+\f1\fs26 \CocoaLigature0 ,
+\f0\fs28 \CocoaLigature1  or can purchase licenses at www.radioshuttle.de.\
+\cf0 \
+
+\b App IDs\
+
+\b0 \cf2 Each node or station can support multiple different services which are called app IDs (application IDs) which are unique worldwide. These app IDs are, similar to TCP/IP port numbers, just an ID to route communication messages. The worldwide unique app IDs can be obtained free of charge for developers at www.radioshuttle.de by agreeing to stay compatible with the RadioShuttle protocol.\
+The central app registration has also the benefit to share the app data content with others, to ensure solution compatibility. However is not needed to share any app ID content details. Think about a basic communication that goes from one device ID (e.g. 1111) using app ID 1234 to device ID 2222 being received by app ID 1234 when available on this device. Node/stations receiving unknown app ID requests will automatically ignore these.}
