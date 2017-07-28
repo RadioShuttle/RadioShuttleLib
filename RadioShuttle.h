@@ -38,11 +38,11 @@ typedef enum RSErrorCode {
     RS_PasswordSet,
     RS_NoSecurityInterface,
     RS_MsgID_NotFound,
-    RS_NoRadioConfigured,			// no Radio added so far
+    RS_NoRadioConfigured,			// No radio added so far
     RS_NoRadioAvailable,            // Radio could not be detected
-    RS_RadioNotFound,				// the specified radio is not available
-    RS_UnknownModemType,            // no FSK no LORA modem type
-    RS_MessageSizeExceeded,			// message size to long
+    RS_RadioNotFound,				// The specified radio is not available
+    RS_UnknownModemType,            // No FSK no LoRa modem type
+    RS_MessageSizeExceeded,			// Message size too long
 } RSCode;
 
 
@@ -62,67 +62,67 @@ public:
     };
     
     enum RadioType {
-        RS_Node_Offline,   	// sleep mode until sending, < 10k RAM
-        RS_Node_Checking,   // sleep mode, checks for messages regulary, < 10k RAM
-        RS_Node_Online,     // always powered on, < 10k RAM
-        RS_Station_Basic,	// always active for one or more apps < 15k RAM
-        RS_Station_Server,	// always active, lots of memory, routing options, < 1MB Ram
+        RS_Node_Offline,   	// Sleep mode until sending, < 10k RAM
+        RS_Node_Checking,   // Sleep mode, checks for messages regulary, < 10k RAM
+        RS_Node_Online,     // Always powered-on, < 10k RAM
+        RS_Station_Basic,	// Always active for one or more apps < 15k RAM
+        RS_Station_Server,	// Always active, lots of memory, routing options, < 1 MB RAM
     };
     
     typedef void (*AppRecvHandler)(int AppID, devid_t stationID, int msgID, int status, void *data, int length);
 
 
     enum MsgStatus {
-        MS_SentCompleted,			// A previous SendMsg has been sent.
+        MS_SentCompleted,			// A previous SendMsg has been sent
         MS_SentCompletedConfirmed,	// A previous SendMsg has been sent and confirmed
-        MS_SentTimeout,				// A timeout occurred, number of retires exceeded
+        MS_SentTimeout,				// A timeout occurred, number of retries exceeded
         
-        MS_RecvData,				// a simple input message
-        MS_RecvDataConfirmed,		// received a confirmed message
+        MS_RecvData,				// A simple input message
+        MS_RecvDataConfirmed,		// Received a confirmed message
         MS_NoStationFound,
         MS_NoStationSupportsApp,
         MS_AuthenicationRequired,
         
-        MS_StationConnected,		// a confirmation that the connection was accepted
-        MS_StationDisconnected,		// a confirmation that the disconnect was accepted
+        MS_StationConnected,		// A confirmation that the connection was accepted
+        MS_StationDisconnected,		// A confirmation that the disconnect was accepted
     };
     
     enum MsgFlags {
-        MF_Response			= 0x01, // a response from a previous request, or request
-        MF_NeedsConfirm		= 0x02, // station needs to acknloglage receivd
-        MF_LowPriority		= 0x04, // transfer within one minute
-        MF_HighPriority		= 0x08, // Immidate transfer
-        MF_MoreDataToCome	= 0x10, // additional data is wait to be sent
-        MF_Connect			= 0x20, // Connect a node to the station with password.
-        MF_Encrypted		= 0x40, // message is encrypted
-        MF_Authentication	= 0x80,	// message requires prior authentication
-        MF_SwitchOptions	= 0x100,// tell the node to switch the channel for this trans ID.
+        MF_Response			= 0x01, // A response from a previous request, or request
+        MF_NeedsConfirm		= 0x02, // Station needs to acknloglage receivd
+        MF_LowPriority		= 0x04, // Transfer within one minute
+        MF_HighPriority		= 0x08, // ImmEdate transfer
+        MF_MoreDataToCome	= 0x10, // Additional data is wait to be sent
+        MF_Connect			= 0x20, // Connect a node to the station with password
+        MF_Encrypted		= 0x40, // Message is encrypted
+        MF_Authentication	= 0x80,	// Message requires prior authentication
+        MF_SwitchOptions	= 0x100,// Tell the node to switch the channel for this trans ID
     };
     
     /*
-     * Constructor requires an Radio 
+     * Constructor requires a radio
      */
     RadioShuttle(const char *deviceName, devid_t deviveID);
 
     ~RadioShuttle();
 
     /*
-     * Adds a new Radio with a given profile
-     * Optional profile, must be called before Startup
+     * Adds a new radio with a given profile
+     * Optional profile, must be called before startup
      */
     RSCode AddRadio(Radio *radio, RadioModems_t modem, const struct RadioProfile *profile = NULL);
     
     /*
      * The status interface allows custom status callbacks for
-     * reporting send/receiving/timeout activity e.g.: led blinks
+     * reporting send/receive/timeout activity e.g.: LED blinks
      */
     RSCode AddRadioStatus(RadioStatusInterface *statusIntf);
     
     /*
      * Support function for password hash generation and encryption
-     * the extern API interface has the advantage that the security
-     * can be upgraded independent of the RadioShuttle library.
-     * AES hardware excelleration can be one reason for it.
+     * The external API interface has the advantage that the security
+     * can be upgraded independently of the RadioShuttle library.
+     * AES hardware accelleration can be one reason for it.
      */
     RSCode AddRadioSecurity(RadioSecurityInterface *securityIntf);
 
@@ -138,22 +138,22 @@ public:
     RadioType GetRadioType(void);
     
     /*
-     * registers an application. the AppType is unique world wide.
-     * and must be used for sending and receiving app data
-     * Multiple appID registrations are suppored.
+     * Registers an application, the AppType is unique worldwide
+     * and must be used for sending and receiving app data.
+     * Multiple AppID registrations are supported.
      * The password can be a string to the password,
-     * in case of binary passwd  data the pwLen must be set.
-     * If the password is set only clients must be do a connect prior
+     * in case of binary passwd data the pwLen must be set.
+     * If the password is set, clients must call Connect() prior
      * to any SendMsg.
      */
     RSCode RegisterApplication(int AppID, AppRecvHandler, void *password = NULL, int pwLen = 0);
     /*
-     * Removes an AppID
+     * Removes the AppID
      */
     RSCode DeRegisterApplication(int AppID);
     
     /*
-     * Check if the password is specified for a app
+     * Check if the password is specified for an app
      */
     RSCode  AppRequiresAuthentication(int AppID);
                        
@@ -163,19 +163,19 @@ public:
     RSCode StartPairing(char *name = NULL);
     /*
      * Connect the node against a station, it can be called multiple times
-     * in case mutiple stations IDs are being used.
+     * if communication with multiple station IDs is used.
      */
     RSCode Connect(int AppID, devid_t stationID = DEV_ID_ANY);
     
     /*
-     * Inform the station that an App is discontinuing.
+     * Inform the station that an app is discontinuing
      */
     RSCode Disconnect(int AppID, devid_t stationID = ~0);
     
     /*
      * Prepare sending data to a remote application
-     * The request is being queued for sending.
-     * The data is busy until the AppRecvHandler is being called.
+     * The request is queued for sending.
+     * The data is busy until the AppRecvHandler is called
      */
     RSCode SendMsg(int AppID, void *data, int len, int flags = 0, devid_t stationID = DEV_ID_ANY, int *msgID = NULL);
     /*
@@ -185,21 +185,21 @@ public:
     
     /*
      * Sets the size value to the largest messages available
-     * with all configured Radios
-     * The flags are important because encrypted message need more space
+     * for all configured radios
+     * The flags are important because encrypted messages need more space
      */
     RSCode MaxMessageSize(int *size, int msgFlags = 0);
     
     /*
-     * starts Shuttle jobs, returns 0 when nothing is needs to be done
-     * retuns > 0 when it should be called again.
-     * RunShuttle is called on user level (non interrupts)
+     * Starts the main RadioShuttle loop, returns 0 when nothing needs to be done
+     * Retuns > 0 when it should be called again
+     * RunShuttle is called on user level (non-interrupt level)
      */
     int RunShuttle(void);
     
     /*
-     * We need to process all input messages, the _recv list schould be empty ASAP
-     * because the data is only temporary available until the next packet.
+     * We need to process all input messages, the _recv list should be empty ASAP
+     * because the data is only temporarily available until the next packet.
      */
     void ProcessReceivedMessages(void);
     
@@ -314,9 +314,9 @@ private:
     
     struct EncryptionHeader {
         uint32_t version : 3;	// 3-bit encryption version
-		uint32_t dataSum : 13;	// check sum of all packet data
-	    uint16_t msgSize : 11;	// same as in RadioHeader
-        uint16_t msgID   : 5;	// same as in RadioHeader
+		uint32_t dataSum : 13;	// Checksum of all packet data
+	    uint16_t msgSize : 11;	// Same as in RadioHeader
+        uint16_t msgID   : 5;	// Same as in RadioHeader
         uint32_t random;
     };
     
@@ -337,11 +337,11 @@ private:
     
     /*
      * The RadioShuttle communication header (similar to UDP),
-     * but optimzed for radios.
-     * A packet crc checksum gets done on the link layer, no field needed here
-     * The source sends always this request to the other side
-     * - Check immidiately for a response after sending.
-     * - Check again for a response in responseWindow*2 milli seconds
+     * but optimized for radios.
+     * A packet crc checksum is done on the link layer, no field needed here
+     * The source always sends this request to the other side
+     * - Check immediately for a response after sending
+     * - Check again for a response in responseWindow*2 milliseconds
      *
      */
     struct RadioHeader {
@@ -351,27 +351,27 @@ private:
         uint16_t msgFlags: 9;		// e.g.: Request/Response NeedsConfirm, Priority, Encrypted
         union {
             struct {
-                uint16_t msgSize : 11;	// 11 bit message size bits allows max 2048 bytes
-                uint16_t msgID   : 5;	// ID for the app communication, truncated to 5 bit.
+                uint16_t msgSize : 11;	// 11-bit message size allows a maximum of 2048 bytes
+                uint16_t msgID   : 5;	// ID for the app communication, truncated to 5-bit
             } data;
             struct {
-                uint16_t channel : 4;	// specify the channel to switch for this transaction
-                uint16_t factor  : 3;   // specifies the spreading factor index (6-12)
-                uint16_t winScale: 4;	// set the window scaling factor
+                uint16_t channel : 4;	// Specify the channel to switch to for this transaction
+                uint16_t factor  : 3;   // Specifies the spreading factor index (6-12)
+                uint16_t winScale: 4;	// Set the window scaling factor
             } option;
         } s;
         union {
             struct { // 8 bytes
-                uint32_t appID      : 11;	// first 2048 Application identifiers for the request
-                devid_t destination : 21;	// device ID of the destination 2^11 first 2 million devices
-                uint32_t respWindow : 11;	// wait for the respWindow (ms) max 2048 ms before sending data.
-                devid_t source      : 21;	// device ID of the destination 2^11 first 2 million devices
+                uint32_t appID      : 11;	// First 2048 application identifiers for the request
+                devid_t destination : 21;	// Device ID of the destination 2^11 first 2 million devices
+                uint32_t respWindow : 11;	// Wait for the respWindow (ms) max 2048 ms before sending data.
+                devid_t source      : 21;	// Device ID of the destination 2^11 first 2 million devices
             } packedv1;
             struct { // 12 bytes
                 uint16_t appID;			// Application identifier for the request
-                uint16_t respWindow;	// we listen for a 2nd resonse in responseWindow (ms)
-                devid_t destination;	// device ID of the destination
-                devid_t source;			// deviceID of the source
+                uint16_t respWindow;	// We listen for a 2nd resonse in responseWindow (ms)
+                devid_t destination;	// Device ID of the destination
+                devid_t source;			// DeviceID of the source
             } fullyv1;
         } u;
     };
@@ -396,8 +396,8 @@ public:
 
 private:
     /*
- 	 * The CadDetection will turn the radio into a Cad listen mode
-     * to detect if a LoRa modulated signal in the air on our channel.
+ 	 * The CadDetection will turn the radio into a Cad listening mode
+     * to detect radio-modulated signals on the channel.
      * This takes a few ms (at SF7) and the interrupt RS_CadDone will report
      * the status.
      * The radio->_CADdetected contains the result (0 for idle, 1 for busy)
@@ -406,15 +406,15 @@ private:
     
     /*
      * Get statistics of all messages and errors
-     * A pointer of the pointer containing the RadioStats must be provided.
-     * The statistics contains the information of the first radio, unless
-     * a radio is specified.
+     * A pointer reference containing the RadioStats must be provided.
+     * The statistics contain the information of the first radio, unless
+     * the RadioEntry parameter is provided for a specified radio.
      */
     RSCode GetStatistics(struct RadioStats **stats, Radio *radio = NULL);
     
     /*
-     * The processing code returns a status code if it has been able to process this message
-     * true or if skips the message false
+     * The processing function returns a status code if it has been able to process
+     * this message. true' for messages processed, false for messages skipped.
      */
     bool ProcessResponseMessage(ReceivedMsgEntry *rme, AppEntry *aep, SendMsgEntry *mep, int  msgFlags, void *data, int len, devid_t source, devid_t respWindow, uint8_t channel, uint8_t factor);
     
@@ -422,15 +422,15 @@ private:
     
     /*
      * Our main send function is responsible for header packing,
-     * compression and encryption and finally sends a packet via the radio.
+     * compression and encryption, and finally sends a packet via the radio.
      * It returns true if we have been able to sent the message.
      */
     bool SendMessage(RadioEntry *re, void *data, int len, int msgID, int AppID, devid_t stationID, int flags, int respWindow, uint8_t channel, uint8_t factor);
     
     /*
-     * We keep a little cache lists of the power needed for different stations
+     * We keep a little cache list of the power needed for different stations
      * This saves a lot of energy and reduces signal strength to keep the network
-     * less busy. e.g. other radio networks do not need to receive our signals.
+     * less busy. For example, other radio networks need not receive our signals.
      */
     int CalculateTXPower(RadioEntry *re, devid_t stationID);
     bool UpdateSignalStrength(devid_t stationID, int dBm);
@@ -439,7 +439,7 @@ private:
     
     /*
      * Our main receive function is responsible for header unpacking,
-     * de-compression and decryption and finally proivdes the unpacked data.
+     * de-compression and decryption, and finally provides the unpacked data.
      * It returns true if we have been able to detect and unpack the message.
      */
     bool ReceiveMessage(ReceivedMsgEntry *rme, void **data, int &len, int &msgID, int &AppID, int &flags, devid_t &destination, devid_t &source, int &respWindow, uint8_t &channel, uint8_t &factor);
@@ -453,7 +453,7 @@ private:
     void PacketTrace(RadioEntry *re, const char *name, RadioHeader *rh, void *data, int len, bool sent, ReceivedMsgEntry *rme);
     
     /*
-     * A dummy function which is being called for every timeout, the timer wakes up
+     * A dummy function which is called for every timeout, the timer wakes up
      * the sleep and therefore the RunShuttle starts processing.
      */
     void TimeoutFunc(void);
@@ -480,7 +480,7 @@ private:
     static const RadioProfile defaultProfile[];
     volatile bool busyInShuttle;
     WireDumpSettings _wireDumpSettings;
-    const static int MAX_SENT_RETRIES = 3;	// defines the number of retries of sents (with confirm)
+    const static int MAX_SENT_RETRIES = 3;	// Defines the number of retries of sents (with confirm)
     const static int RX_TIMEOUT_1HOUR	= 3600000;
     RadioStatusInterface *_statusIntf;
     RadioSecurityInterface *_securityIntf;

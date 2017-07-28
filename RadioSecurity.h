@@ -1,5 +1,5 @@
 /*
- * The file is Licensed under the Apache License, Version 2.0
+ * The file is licensed under the Apache License, Version 2.0
  * (c) 2017 Helmut Tschemernjak
  * 30826 Garbsen (Hannover) Germany
  */
@@ -13,7 +13,7 @@ public:
     ~RadioSecurity();
     virtual int GetSecurityVersion(void);
     /*
-     * The hash block size for SHA256 is bytes
+     * The hash block size for SHA256 in bytes
      */
     virtual	int GetHashBlockSize(void);
     virtual	void HashPassword(void *seed, int seedLen, void *password, int pwLen, void *hashResult);
