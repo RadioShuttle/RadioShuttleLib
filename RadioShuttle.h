@@ -99,6 +99,21 @@ public:
         MF_SwitchOptions	= 0x100,// Tell the node to switch the channel for this trans ID
     };
     
+    struct RadioStats {
+        int RxPackets;
+        int TxPackets;
+        int RxErrorCount;
+        int channelBusyCount;
+        long long rxBytes;
+        long long txBytes;
+        int noAuthMessageCount;
+        int unkownMessageCount;
+        int appNotSupported;
+        int protocolError;
+        int noMemoryError;
+        time_t startupTime;
+    };
+    
     /*
      * Constructor requires a radio
      */
@@ -130,7 +145,6 @@ public:
      * Starts the service with the specified RadioType
      */
     RSCode Startup(RadioType radioType);
-    
     
     /*
      * get the current radio type
@@ -191,20 +205,20 @@ public:
     RSCode MaxMessageSize(int *size, int msgFlags = 0);
     
     /*
+     * Get statistics of all messages and errors
+     * A pointer reference containing the RadioStats must be provided.
+     * The statistics contain the information of the first radio, unless
+     * the RadioEntry parameter is provided for a specified radio.
+     */
+    RSCode GetStatistics(struct RadioStats **stats, Radio *radio = NULL);
+    
+    /*
      * Starts the main RadioShuttle loop, returns 0 when nothing needs to be done
      * Retuns > 0 when it should be called again
      * RunShuttle is called on user level (non-interrupt level)
      */
     int RunShuttle(void);
     
-    /*
-     * We need to process all input messages, the _recv list should be empty ASAP
-     * because the data is only temporarily available until the next packet.
-     */
-    void ProcessReceivedMessages(void);
-    
-    void SaveTimeOnAirSlot(devid_t destination, int AppID, int msgFlags, int respWindow, uint8_t channel, uint8_t factor, int timeOnAir);
-
 private:
     enum PacketStatus {
         PS_Queued,
@@ -225,20 +239,6 @@ private:
         struct RadioEntry *re;
     };
     
-    struct RadioStats {
-        int RxPackets;
-        int TxPackets;
-        int RxErrorCount;
-        int channelBusyCount;
-        long long rxBytes;
-        long long txBytes;
-        int noAuthMessageCount;
-        int unkownMessageCount;
-        int appNotSupported;
-        int protocolError;
-        int noMemoryError;
-        time_t startupTime;
-    };
 
     struct RadioEntry {
         Radio *radio;
@@ -384,7 +384,7 @@ private:
     };
     
     /*
-     * Radio specific callbacks
+     * Radio specific callbacks are public to allow C wrapper function to call us.
      */
 public:
     void RS_TxDone(Radio *radio, void *userData);
@@ -405,20 +405,15 @@ private:
     bool CadDetection(RadioEntry *re);
     
     /*
-     * Get statistics of all messages and errors
-     * A pointer reference containing the RadioStats must be provided.
-     * The statistics contain the information of the first radio, unless
-     * the RadioEntry parameter is provided for a specified radio.
-     */
-    RSCode GetStatistics(struct RadioStats **stats, Radio *radio = NULL);
-    
-    /*
      * The processing function returns a status code if it has been able to process
      * this message. true' for messages processed, false for messages skipped.
      */
     bool ProcessResponseMessage(ReceivedMsgEntry *rme, AppEntry *aep, SendMsgEntry *mep, int  msgFlags, void *data, int len, devid_t source, devid_t respWindow, uint8_t channel, uint8_t factor);
     
     bool ProcessRequestMessage(ReceivedMsgEntry *rme, AppEntry *aep, int  msgFlags, void *data, int len, int msgID, devid_t source, uint32_t respWindow, uint8_t channel, uint8_t factor);
+    
+
+    void SaveTimeOnAirSlot(devid_t destination, int AppID, int msgFlags, int respWindow, uint8_t channel, uint8_t factor, int timeOnAir);
     
     /*
      * Our main send function is responsible for header packing,
@@ -443,7 +438,12 @@ private:
      * It returns true if we have been able to detect and unpack the message.
      */
     bool ReceiveMessage(ReceivedMsgEntry *rme, void **data, int &len, int &msgID, int &AppID, int &flags, devid_t &destination, devid_t &source, int &respWindow, uint8_t &channel, uint8_t &factor);
-
+    
+    /*
+     * We need to process all input messages, the _recv list should be empty ASAP
+     * because the data is only temporarily available until the next packet.
+     */
+    void ProcessReceivedMessages(void);
     
     /*
      * Dump all received and sent packets
