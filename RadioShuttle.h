@@ -194,6 +194,7 @@ public:
     /*
      * Connect the node against a station, it can be called multiple times
      * if communication with multiple station IDs is used.
+     * The connect verifies the password against the app of remote station.
      */
     RSCode Connect(int AppID, devid_t stationID = DEV_ID_ANY);
     

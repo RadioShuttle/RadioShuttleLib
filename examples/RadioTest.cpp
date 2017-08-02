@@ -91,7 +91,7 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
         case RadioShuttle::MS_NoStationSupportsApp:
             dprintf("MSG_NoStationSupportsApp");
             break;
-        case RadioShuttle::MS_AuthenicationRequired:
+        case RadioShuttle::MS_AuthenicationRequired: // the password does not match.
             dprintf("MSG_AuthenicationRequired");
             break;
 
