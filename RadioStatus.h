@@ -6,9 +6,9 @@
 
 
 
-class STMRadioStatus : public RadioStatusInterface {
+class MyRadioStatus : public RadioStatusInterface {
 public:
-   	STMRadioStatus();
+   	MyRadioStatus();
     
     virtual	void TXStart(int AppID, int toStation, int length);
     virtual void TXComplete(void);

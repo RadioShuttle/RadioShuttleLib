@@ -40,9 +40,11 @@ enum SensorsIDs { // Must be unique world wide.
     myTempSensorApp = 0x0001,
 #ifdef RADIO_SERVER
     myDeviceD = 1,
-    remoteDeviceID = 20,
+    myCode = 0,
+    remoteDeviceID = 9,
 #else
-    myDeviceD = 20,
+    myDeviceD = 9,
+    myCode = 0,
     remoteDeviceID = 1,
 #endif
 };
@@ -121,7 +123,7 @@ int RadioTest()
             LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
             LORA_ANT_RX, LORA_ANT_TX, LORA_ANT_BOOST, LORA_TCXO);
     
-    statusIntf = new STMRadioStatus();
+    statusIntf = new MyRadioStatus();
 #else // RFM95
     radio = new SX1276Generic(NULL, RFM95_SX1276,
             LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
@@ -130,7 +132,13 @@ int RadioTest()
 
     securityIntf = new RadioSecurity();
     
-    RadioShuttle *rs = new RadioShuttle("MyRadioShuttle", myDeviceD);
+    RadioShuttle *rs = new RadioShuttle("MyRadioShuttle");
+    
+    rs->EnablePacketTrace(RadioShuttle::DEV_ID_ANY, true, true);
+    
+    err = rs->AddLicense(myDeviceD, myCode);
+    if (err)
+        return err;
     err = rs->AddRadio(radio, MODEM_LORA, myProfile);
     if (err)
         return err;
@@ -188,7 +196,8 @@ int RadioTest()
             deepsleep(); // CPU is turned off lowest power mode;
         } else {
             sleep();  // timer and radio interrupts will wakeup us
-        }        rs->RunShuttle(); // process all pending events
+        }
+        rs->RunShuttle(); // process all pending events
 #ifdef TARGET_STM32L4
         WatchDogUpdate();
 #endif        

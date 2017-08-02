@@ -2,7 +2,13 @@
  * This is an unpublished work copyright
  * (c) 2017 Helmut Tschemernjak
  * 30826 Garbsen (Hannover) Germany
+ *
+ *
+ * Use is granted to registered RadioShuttle licensees only.
+ * Licensees must own a valid serial number and product code.
+ * Details see: www.radioshuttle.de
  */
+
 #ifndef __RADIOSHUTTLE_H__
 #define __RADIOSHUTTLE_H__
 
@@ -43,6 +49,7 @@ typedef enum RSErrorCode {
     RS_RadioNotFound,				// The specified radio is not available
     RS_UnknownModemType,            // No FSK no LoRa modem type
     RS_MessageSizeExceeded,			// Message size too long
+    RS_InvalidProductCode,			// license does not match 
 } RSCode;
 
 
@@ -117,9 +124,18 @@ public:
     /*
      * Constructor requires a radio
      */
-    RadioShuttle(const char *deviceName, devid_t deviveID);
+    RadioShuttle(const char *deviceName);
 
     ~RadioShuttle();
+    
+    /*
+     * Adds a license to use the RadioShuttle, licenses are
+     * may be bundled with the board or are available for 
+     * purchase at: www.radioshuttle.com
+     * The license is bound to a special board ID and a fixed
+     * node deviceID.
+     */
+    RSCode AddLicense(devid_t deviceID, uint32_t productCode);
 
     /*
      * Adds a new radio with a given profile
@@ -211,6 +227,13 @@ public:
      * the RadioEntry parameter is provided for a specified radio.
      */
     RSCode GetStatistics(struct RadioStats **stats, Radio *radio = NULL);
+    
+
+    /*
+     * Dump all received and sent packets
+     */
+    void EnablePacketTrace(devid_t stationID = DEV_ID_ANY, bool sents = false, bool recvs = false, Radio *radio = 0);
+    
     
     /*
      * Starts the main RadioShuttle loop, returns 0 when nothing needs to be done
@@ -445,10 +468,6 @@ private:
      */
     void ProcessReceivedMessages(void);
     
-    /*
-     * Dump all received and sent packets
-     */
-    void EnablePacketTrace(devid_t stationID = DEV_ID_ANY, bool sents = false, bool recvs = false, Radio *radio = 0);
     
     void PacketTrace(RadioEntry *re, const char *name, RadioHeader *rh, void *data, int len, bool sent, ReceivedMsgEntry *rme);
     
@@ -464,6 +483,8 @@ private:
 private:
     const char *_name;
     devid_t _deviceID;
+    devid_t _tmpdeviceID;
+    uint8_t _uuid[16];
     RadioType _radioType;
     int _maxMTUSize;
     list<RadioEntry> _radios;
@@ -484,6 +505,7 @@ private:
     const static int RX_TIMEOUT_1HOUR	= 3600000;
     RadioStatusInterface *_statusIntf;
     RadioSecurityInterface *_securityIntf;
+    uint32_t _;
 };
 
 #endif // __RADIOSHUTTLE_H__

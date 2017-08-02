@@ -8,6 +8,7 @@
 #ifdef ARDUINO
 #include <Arduino.h>
 #include "arduino-mbed.h"
+#define FEATURE_LORA    1
 #endif
 #ifdef __MBED__
 #include "mbed.h"
@@ -19,7 +20,7 @@
 #ifdef FEATURE_LORA
 
 
-STMRadioStatus::STMRadioStatus()
+MyRadioStatus::MyRadioStatus()
 {
     ledTX = NULL;
     ledRX = NULL;
@@ -36,35 +37,35 @@ STMRadioStatus::STMRadioStatus()
 }
 
 void
-STMRadioStatus::TXStart(int AppID, int toStation, int length)
+MyRadioStatus::TXStart(int AppID, int toStation, int length)
 {
     if (ledTX)
     	*ledTX = 1;
 }
 
 void
-STMRadioStatus::TXComplete(void)
+MyRadioStatus::TXComplete(void)
 {
     if (ledTX)
 		*ledTX = 0;
 }
 
 void
-STMRadioStatus::RxDone(int size, int rssi, int snr)
+MyRadioStatus::RxDone(int size, int rssi, int snr)
 {
     if (ledRX)
 	    *ledRX = 1;
 }
 
 void
-STMRadioStatus::RxCompleted(void)
+MyRadioStatus::RxCompleted(void)
 {
     if (ledRX)
     	*ledRX = 0;
 }
 
 void
-STMRadioStatus::MessageTimeout(int App, int toStation)
+MyRadioStatus::MessageTimeout(int App, int toStation)
 {
     if (ledTimeout)
     	*ledTimeout = 1;

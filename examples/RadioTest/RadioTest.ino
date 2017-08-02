@@ -29,9 +29,11 @@ enum SensorsIDs { // Must be unique world wide.
     myTempSensorApp = 0x0001,
 #ifdef RADIO_SERVER
     myDeviceD = 1,
-    remoteDeviceID = 20,
+    myCode = 0x20EE91D6
+    remoteDeviceID = 9,
 #else
-    myDeviceD = 20,
+    myDeviceD = 9,
+    myCode = 0x20EE91DE,
     remoteDeviceID = 1,
 #endif
 };
@@ -126,9 +128,17 @@ void setup() {
             LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
             LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
  
+  statusIntf = new MyRadioStatus();
+
   securityIntf = new RadioSecurity();
 
-  rs = new RadioShuttle("MyRadioShuttle", myDeviceD);
+  rs = new RadioShuttle("MyRadioShuttle");
+
+  rs->EnablePacketTrace(RadioShuttle::DEV_ID_ANY, true, true);
+  
+  err = rs->AddLicense(myDeviceD, myCode);
+  if (err)
+    return;  
 
   err = rs->AddRadio(radio, MODEM_LORA, myProfile);
   if (err)
