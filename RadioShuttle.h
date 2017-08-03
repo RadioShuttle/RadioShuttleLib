@@ -118,6 +118,7 @@ public:
         int appNotSupported;
         int protocolError;
         int noMemoryError;
+        int decryptError;
         time_t startupTime;
     };
     
@@ -462,7 +463,7 @@ private:
      * de-compression and decryption, and finally provides the unpacked data.
      * It returns true if we have been able to detect and unpack the message.
      */
-    bool ReceiveMessage(ReceivedMsgEntry *rme, void **data, int &len, int &msgID, int &AppID, int &flags, devid_t &destination, devid_t &source, int &respWindow, uint8_t &channel, uint8_t &factor, bool &decryptError);
+    bool ReceiveMessage(ReceivedMsgEntry *rme, void **data, int &len, int &msgID, int &AppID, int &flags, devid_t &destination, devid_t &source, int &respWindow, uint8_t &channel, uint8_t &factor);
     
     /*
      * We need to process all input messages, the _recv list should be empty ASAP
