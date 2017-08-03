@@ -436,7 +436,8 @@ private:
     
     bool ProcessRequestMessage(ReceivedMsgEntry *rme, AppEntry *aep, int  msgFlags, void *data, int len, int msgID, devid_t source, uint32_t respWindow, uint8_t channel, uint8_t factor);
     
-
+    void MessageSecurityError(ReceivedMsgEntry *rme, AppEntry *aep, int msgID, devid_t source, uint8_t channel, uint8_t factor);
+    
     void SaveTimeOnAirSlot(devid_t destination, int AppID, int msgFlags, int respWindow, uint8_t channel, uint8_t factor, int timeOnAir);
     
     /*
@@ -461,7 +462,7 @@ private:
      * de-compression and decryption, and finally provides the unpacked data.
      * It returns true if we have been able to detect and unpack the message.
      */
-    bool ReceiveMessage(ReceivedMsgEntry *rme, void **data, int &len, int &msgID, int &AppID, int &flags, devid_t &destination, devid_t &source, int &respWindow, uint8_t &channel, uint8_t &factor);
+    bool ReceiveMessage(ReceivedMsgEntry *rme, void **data, int &len, int &msgID, int &AppID, int &flags, devid_t &destination, devid_t &source, int &respWindow, uint8_t &channel, uint8_t &factor, bool &decryptError);
     
     /*
      * We need to process all input messages, the _recv list should be empty ASAP
@@ -496,7 +497,7 @@ private:
     map<devid_t, SignalStrengthEntry> _signals;
     list<TimeOnAirSlotEntry> _airtimes;
     Timeout *timer;
-    volatile uint32_t prevTimeout;
+    volatile uint32_t prevWakeup;
     int SetTimerCount;
     
     static const RadioProfile defaultProfile[];
