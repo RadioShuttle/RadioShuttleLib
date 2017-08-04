@@ -117,7 +117,7 @@ int RadioTest()
     timeout.attach(&timoutFunc, 10);
     
     
-#ifdef B_L072Z_LRWAN1_LORA
+#ifdef TARGET_DISCO_L072CZ_LRWAN1
     radio = new SX1276Generic(NULL, MURATA_SX1276,
             LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
             LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
