@@ -187,10 +187,10 @@ void loop() {
         flags |= RadioShuttle::MF_Encrypted;
 
       if (server) {
-        char msg[] = "The server feels very good today";
+        static char msg[] = "The server feels very good today";
         rs->SendMsg(myTempSensorApp, msg, sizeof(msg), flags, remoteDeviceID);
       } else {
-        char msg[] = "Hello, the temperature is 26 celsius";
+        static char msg[] = "Hello, the temperature is 26 celsius";
         rs->SendMsg(myTempSensorApp, msg, sizeof(msg), flags, remoteDeviceID);
      }
     }
