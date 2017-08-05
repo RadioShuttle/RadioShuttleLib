@@ -273,10 +273,12 @@ private:
         volatile signed char _CADdetected;
         uint16_t lastTxSize;
         int lastTxPower;
+        int timeOnAir12Bytes;
         struct ReceivedMsgEntry rxMsg;
         struct RadioStats rStats;
         int maxTimeOnAir;
         int retry_ms;
+        uint32_t lastTxDone;
         uint32_t random;
         uint32_t random2;
     };

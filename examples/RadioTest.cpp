@@ -51,15 +51,24 @@ enum SensorsIDs { // Must be unique world wide.
 
 unsigned char samplePassword[] = { "RadioShuttleFly" };
 
+/*
+ * For details review: SX1276GenericLib/sx1276/sx1276.h
+ * Supported spreading factors SF 7,8, 9, 10, 11, (12 does not work well)
+ * Working frequencies using the 125000 bandwidth which leaves
+ * sufficient distance to the neighbour channel
+ * EU: 868.1, 868.3, 868.5 (Default LoRaWAN EU channels)
+ * EU: 865.1, 865.3, 865.5, 865.7, 865.9 (additional channels)
+ * EU: 866.1, 866.3, 866.5, 866.7, 866.9 (additional channels)
+ * EU: 867.1, 867.3, 867.5, 867.7, 867.9 (additional channels)
+ * Utilisation of these channels should not exceed 1% per hour per node
+ * Bandwidth changes other than 125k requires different channels distances
+ */
 const RadioShuttle::RadioProfile myProfile[] =  {
     /*
      * Our default profile
      * frequency, bandwidth, TX power, spreading factor
      */
-    { 868100000, 125000, 14, 7 },       // used 0 < 15 seconds
-    { 868300000, 500000, 14, 7 },       // used 15 < 30 seconds
-    { 868500000, 500000, 14, 7 },       // used 30 < 45 seconds
-    { 868700000, 500000, 14, 11 },      // used 45 < 0 seconds
+    { 868100000, 125000, 14, 7 },
     { 0, 0, 0, 0 },
 };
 
