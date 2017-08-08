@@ -31,7 +31,7 @@ MyRadioStatus::MyRadioStatus()
     *ledTX = 0;
     ledRX = new DigitalOut(LED4); // red
     *ledRX = 0;
-    ledTimeout = new DigitalOut(LED2); // green
+    ledTimeout = new DigitalOut(LED1); // green
     *ledTimeout = 0;
 #endif
 }

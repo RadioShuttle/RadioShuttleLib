@@ -95,7 +95,7 @@ int SX1276PingPong()
 {
 #if( defined ( TARGET_KL25Z ) || defined ( TARGET_LPC11U6X ) )
     DigitalOut *led = new DigitalOut(LED2);
-#elif defined(TARGET_NUCLEO_L073RZ)
+#elif defined(TARGET_NUCLEO_L073RZ) || defined (TARGET_DISCO_L072CZ_LRWAN1)
     DigitalOut *led = new DigitalOut(LED4);   // RX red
     led3 = new DigitalOut(LED3);  // TX blue
 #else
