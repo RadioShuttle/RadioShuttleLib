@@ -20,5 +20,6 @@ private:
     DigitalOut *ledTX;
     DigitalOut *ledRX;
     DigitalOut *ledTimeout;
+    bool inverted;
 };
 

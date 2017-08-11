@@ -33,7 +33,9 @@ enum SensorsIDs { // Must be unique world wide.
     remoteDeviceID = 9,
 #else
     myDeviceD = 9,
-    myCode = 0x20EE91DE,
+    //myCode = 0x20EE91DE, // Atmel Board
+    //myCode = 0x194F6298, // Ra Board black
+    myCode = 0x112B92ED, // Ra Board rot
     remoteDeviceID = 1,
 #endif
 };
@@ -106,11 +108,17 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
 
 
 DigitalOut led(LED);
+#ifdef BOOSTER_EN50
+DigitalOut boost50(BOOSTER_EN50);
+#endif
+#ifdef BOOSTER_EN33
+DigitalOut boost33(BOOSTER_EN33);
+#endif
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
 void SwitchInput(void) {
-   dprintf("SwitchInput");  
+   dprintf("SwitchInput");
    led = !led;
    pressedCount++;
 }
@@ -118,15 +126,28 @@ void SwitchInput(void) {
 Radio *radio;
 RadioShuttle *rs;
 
+
 void setup() {
   MYSERIAL.begin(230400);
-  InitSerial(&MYSERIAL);
+  InitSerial(&MYSERIAL, 3000); // wait 2000ms that the Serial Monitor opens, otherwise turn off USB.
   SPI.begin();
+  
+  dprintf("USBStatus: %s", SerialUSB_active == true ? "SerialUSB_active" : "SerialUSB_disbaled");
+  if (!SerialUSB_active) {
+      for (int i = 0; i < 10; i++) { // lets link the LED to show that SerialUSB is off.
+        led = 1;
+        delay(80);
+        led = 0;
+        delay(80);        
+      }
+  }
 
-  led = 0;
+  led = 1;
+ #ifdef BOOSTER_EN50
+  boost50 = 0;
+ #endif
   intr.mode(PullUp);
   intr.fall(callback(&SwitchInput));
-  
   dprintf("MyRadioShuttle");
   dump("MyDump", "Hello World\r\n", sizeof("Hello World\r\n")-1);
 
@@ -176,7 +197,8 @@ void setup() {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
     dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceD);
   } else {
-    err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
+    // err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
+    err = rs->Startup(RadioShuttle::RS_Node_Offline);
     dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceD);
     if (rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myTempSensorApp, remoteDeviceID);
@@ -189,7 +211,6 @@ void setup() {
 
 void loop() {
   static int cnt = 0;
-  led = !led;
 
   if (cnt != pressedCount) {
     if (cnt > 0) {
@@ -209,11 +230,13 @@ void loop() {
     cnt = pressedCount;
   }
 
-  if (rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
-    sleep();// deepsleep(); // CPU is turned off lowest power mode;
+  led = 0;
+  if (!SerialUSB_active && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
+    sleep(); //deepsleep(); // CPU is turned off lowest power mode;
   } else {
     sleep();  // timer and radio interrupts will wakeup us
   }
+  led = 1;
   rs->RunShuttle(); // process all pending events
 }
 
