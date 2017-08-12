@@ -1,14 +1,14 @@
-
-#ifdef __SAMD21J18A__ 
-//#erro "bla"
-//#ifdef USBCON
-#endif
+/*
+ * The file is Licensed under the Apache License, Version 2.0
+ * (c) 2017 Helmut Tschemernjak
+ * 30826 Garbsen (Hannover) Germany
+ */
 
 #ifdef _VARIANT_ATMEL_SAMD21_XPRO_
 #define FEATURE_LORA	1
 
 #define	SW0				3		// switch needs pullup.
-#define LED       LED_BUILTIN
+#define LED             LED_BUILTIN
 
 #define MYSERIAL          Serial
 
@@ -26,9 +26,10 @@
 
 #elif __SAMD21G18A__ // Zero
 
-// #define BOARD_REV_200  1
-// #define BOARD_REV_301  1
-#define BOARD_REV_630     1
+// #define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
+// #define BOARD_REV_301  1		// board with Lipo power supply/charger, micro USB
+#define BOARD_REV_630     1		// board with Lipo power supply/charger, micro USB
+// #define BOARD_REV_720  1		// Maker Faire Hannoer revision, micro USB
 
 #define FEATURE_LORA  1
 
@@ -54,7 +55,7 @@
 #elif BOARD_REV_630
 
 #define SW0       		12              // switch needs pullup.
-#define LED       		13
+#define LED       		LED_BUILTIN     // 13
 #define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA06?

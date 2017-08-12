@@ -5,12 +5,15 @@
  */
 
 #include "PinMap.h"
-#include "arduino-mbed.h"
-#include "sx1276-mbed-hal.h"
-#include "RadioShuttle.h"
-#include "RadioStatus.h"
-#include "RadioSecurity.h"
-#include "arduino-util.h"
+#include <arduino-mbed.h>
+#include <sx1276-mbed-hal.h>
+#include <RadioShuttle.h>
+#include <RadioStatus.h>
+#include <RadioSecurity.h>
+#include <arduino-util.h>
+#include <RTCZero.h>
+
+
 
 #ifdef FEATURE_LORA
 
@@ -116,11 +119,19 @@ DigitalOut boost33(BOOSTER_EN33);
 #endif
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
+RTCZero rtc;
+
 
 void SwitchInput(void) {
    dprintf("SwitchInput");
    led = !led;
    pressedCount++;
+}
+
+void alarmMatch()
+{
+  rtc.setAlarmTime(rtc.getHours(), rtc.getMinutes(), rtc.getSeconds()+5);
+  rtc.enableAlarm(rtc.MATCH_HHMMSS);
 }
 
 Radio *radio;
@@ -131,7 +142,11 @@ void setup() {
   MYSERIAL.begin(230400);
   InitSerial(&MYSERIAL, 3000); // wait 2000ms that the Serial Monitor opens, otherwise turn off USB.
   SPI.begin();
-  
+  rtc.begin();
+
+  rtc.setTime(00, 00, 00);
+  rtc.setDate(00, 00, 17);
+
   dprintf("USBStatus: %s", SerialUSB_active == true ? "SerialUSB_active" : "SerialUSB_disbaled");
   if (!SerialUSB_active) {
       for (int i = 0; i < 10; i++) { // lets link the LED to show that SerialUSB is off.
@@ -197,8 +212,8 @@ void setup() {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
     dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceD);
   } else {
-    // err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
-    err = rs->Startup(RadioShuttle::RS_Node_Offline);
+    err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
+    //err = rs->Startup(RadioShuttle::RS_Node_Offline);
     dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceD);
     if (rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myTempSensorApp, remoteDeviceID);
@@ -231,8 +246,22 @@ void loop() {
   }
 
   led = 0;
-  if (!SerialUSB_active && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
-    sleep(); //deepsleep(); // CPU is turned off lowest power mode;
+  if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
+    /*
+     * A periodic wakeup us needed in deepsleep to allow checking for events.
+     * In deepsleep() the CPU is turned off, lowest power mode.
+     */
+    int interval = 5;
+    int secs = rtc.getSeconds() + interval;
+    if (secs >= 58)
+      secs = interval;
+    rtc.setAlarmSeconds(secs);
+    rtc.enableAlarm(rtc.MATCH_SS);
+
+    deepsleep();
+    if (digitalRead(SW0) == LOW) {
+      cnt++; // do something here, e.g. check sensors and send a message
+    }
   } else {
     sleep();  // timer and radio interrupts will wakeup us
   }

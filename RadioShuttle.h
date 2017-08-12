@@ -236,6 +236,10 @@ public:
      */
     void EnablePacketTrace(devid_t stationID = DEV_ID_ANY, bool sents = false, bool recvs = false, Radio *radio = 0);
     
+    /*
+     * The RadioShuttle is idle when there are no ongoing jobs, etc.
+     */
+    bool Idle(void);
     
     /*
      * Starts the main RadioShuttle loop, returns 0 when nothing needs to be done
