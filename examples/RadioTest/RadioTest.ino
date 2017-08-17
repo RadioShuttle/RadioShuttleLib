@@ -37,8 +37,8 @@ enum SensorsIDs { // Must be unique world wide.
 #else
     myDeviceD = 9,
     //myCode = 0x20EE91DE, // Atmel Board
-    //myCode = 0x194F6298, // Ra Board black
-    myCode = 0x112B92ED, // Ra Board rot
+    myCode = 0x112B92ED, //Board r6.3 green pcb, red tactile
+    // myCode = 0x194F6298, //Board r6.3 green pcb, black tactile
     remoteDeviceID = 1,
 #endif
 };

@@ -26,15 +26,15 @@
 
 #elif __SAMD21G18A__ // Zero
 
-// #define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
+//#define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
 // #define BOARD_REV_301  1		// board with Lipo power supply/charger, micro USB
-#define BOARD_REV_630     1		// board with Lipo power supply/charger, micro USB
+#define BOARD_REV_630  1		// board with Lipo power supply/charger, micro USB
 // #define BOARD_REV_720  1		// Maker Faire Hannoer revision, micro USB
 
 #define FEATURE_LORA  1
 
 
-#ifdef BOARD_REV_301
+#if defined(BOARD_REV_301) || defined(BOARD_REV_200)
 
 #define SW0      		1   // switch needs pullup.
 #define LED       		0
@@ -70,8 +70,8 @@
 #define LORA_DIO4       17            // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
-#define BOOSTER_EN33    9
-#define BOOSTER_EN50    8
+#define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
+#define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 
 /*
  * PIN_LED_RXL and PIN_LED_TXL are already defined.
