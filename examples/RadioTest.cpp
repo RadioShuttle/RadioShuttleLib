@@ -39,11 +39,11 @@ void timoutFunc(void)
 enum SensorsIDs { // Must be unique world wide.
     myTempSensorApp = 0x0001,
 #ifdef RADIO_SERVER
-    myDeviceD = 1,
+    myDeviceID = 1,
     myCode = 0,
     remoteDeviceID = 9,
 #else
-    myDeviceD = 9,
+    myDeviceID = 9,
     myCode = 0,
     remoteDeviceID = 1,
 #endif
@@ -145,7 +145,7 @@ int RadioTest()
     
     rs->EnablePacketTrace(RadioShuttle::DEV_ID_ANY, true, true);
     
-    err = rs->AddLicense(myDeviceD, myCode);
+    err = rs->AddLicense(myDeviceID, myCode);
     if (err)
         return err;
     err = rs->AddRadio(radio, MODEM_LORA, myProfile);
@@ -170,10 +170,10 @@ int RadioTest()
     
     if (server) {
         err = rs->Startup(RadioShuttle::RS_Station_Basic);
-        dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceD);
+        dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
     } else {
         err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
-        dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceD);
+        dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
         if (rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
         	err = rs->Connect(myTempSensorApp, remoteDeviceID);
         }
