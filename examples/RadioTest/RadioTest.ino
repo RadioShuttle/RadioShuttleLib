@@ -248,7 +248,7 @@ void loop() {
   led = 0;
   if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
     /*
-     * A periodic wakeup us needed in deepsleep to allow checking for events.
+     * A periodic wakeup is needed in deepsleep to allow checking for events.
      * In deepsleep() the CPU is turned off, lowest power mode.
      */
     int interval = 5;
