@@ -1,3 +1,8 @@
+/*
+   The file is Licensed under the Apache License, Version 2.0
+   (c) 2017 Helmut Tschemernjak
+   30826 Garbsen (Hannover) Germany
+*/
 
 class PMSensor {
   public:
@@ -6,6 +11,9 @@ class PMSensor {
     uint16_t getPM10(void);
     uint16_t getPM25(void);
     uint16_t getPMid(void);
+    int getWarmUpSeconds(void) {
+      return PM_WARMUP_SECONDS;
+    };
 
 private:
     bool PMChecksumOK();
@@ -28,4 +36,5 @@ private:
     SensorRec _rec;
     SensorRec _data;
     Uart *_ser;
+    const static int PM_WARMUP_SECONDS = 20;
 };

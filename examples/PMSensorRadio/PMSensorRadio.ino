@@ -136,6 +136,7 @@ DigitalOut boost33(BOOSTER_EN33);
 #endif
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
+
 RTCZero rtc;
 
 uint32_t lastPMReadTime;
@@ -150,8 +151,12 @@ void SwitchInput(void) {
 
 void alarmMatch()
 {
-  rtc.setAlarmTime(rtc.getHours(), rtc.getMinutes(), rtc.getSeconds()+5);
-  rtc.enableAlarm(rtc.MATCH_HHMMSS);
+  int interval = 5;
+  int secs = rtc.getSeconds() + interval;
+  if (secs >= 58)
+    secs = interval;
+  rtc.setAlarmSeconds(secs);
+  rtc.enableAlarm(rtc.MATCH_SS);
 }
 
 Radio *radio;
@@ -167,6 +172,14 @@ void setup() {
   rtc.setTime(00, 00, 00);
   rtc.setDate(00, 00, 17);
 
+  int interval = 5;
+  int secs = rtc.getSeconds() + interval;
+  if (secs >= 58)
+    secs = interval;
+  rtc.setAlarmSeconds(secs);
+  rtc.enableAlarm(rtc.MATCH_SS);
+  rtc.attachInterrupt(alarmMatch);
+
   dprintf("USBStatus: %s", SerialUSB_active == true ? "SerialUSB_active" : "SerialUSB_disbaled");
   if (!SerialUSB_active) {
       for (int i = 0; i < 10; i++) { // lets link the LED to show that SerialUSB is off.
@@ -180,7 +193,6 @@ void setup() {
   led = 1;
   intr.mode(PullUp);
   intr.fall(callback(&SwitchInput));
-  dprintf("PMSensorRadio");
 
   pm.SensorInit(&Serial1);
   lastPMReadTime = rtc.getEpoch();
@@ -236,9 +248,9 @@ void setup() {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
     dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
   } else {
-    err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
-    //err = rs->Startup(RadioShuttle::RS_Node_Offline);
-    dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
+    //err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
+    err = rs->Startup(RadioShuttle::RS_Node_Offline);
+    dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
     if (rs->AppRequiresAuthentication(myPMSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myPMSensorApp, remoteDeviceID);
     }
@@ -253,32 +265,30 @@ void loop() {
 
   uint32_t rtctime = rtc.getEpoch();
   if (!server && rtctime > (lastPMReadTime + PM_READ_INTERVAL)) {
-      cnt++; // it is time to read the sensor data.
       lastPMReadTime = rtctime;
+      cnt++; // it is time to read the sensor data.
   }
 
 
   if (cnt != pressedCount) {
-    if (cnt > 0) {
       int flags = 0;
-      flags |= RadioShuttle::MF_NeedsConfirm; // optional not needed for PMSensor data
+      // flags |= RadioShuttle::MF_NeedsConfirm; // optional
       if (usePassword && useAES)
         flags |= RadioShuttle::MF_Encrypted; // optional not needed for PMSensor data
 
       if (server) {
         rs->SendMsg(myPMSensorApp, NULL, 0, flags, remoteDeviceID);
       } else {
-        uint32_t warmUpSecs = 20; 
-        uint32_t start = s_getTicker();
-        bool gotData = false;
-        
  #ifdef BOOSTER_EN50
         boost50 = 1;
  #endif
-        while (s_getTicker() < (start+warmUpSecs)) {
+        uint32_t start = s_getTicker();
+        bool gotData = false;
+
+        while (s_getTicker() < (start+pm.getWarmUpSeconds())) {
           if (pm.ReadRecord())
             gotData = true;
-        }
+       }
  #ifdef BOOSTER_EN50
         boost50 = 0;
  #endif
@@ -292,26 +302,21 @@ void loop() {
           rs->SendMsg(myPMSensorApp, &PMAppData, sizeof(PMAppData), flags, remoteDeviceID);
         }
      }
-    }
     cnt = pressedCount;
   }
 
-  led = 0;
+  led = 0;    
   if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
     /*
-     * A periodic wakeup us needed in deepsleep to allow checking for events.
      * In deepsleep() the CPU is turned off, lowest power mode.
+     * we receive a wakeup every 5 seconds to allow to work
+     * in sleep the SW0 handler gets called.
+     * in deepsleep we need to check the state of the SW0 switch 
+     * and call the SwitchInput handler manually.
      */
-    int interval = 5;
-    int secs = rtc.getSeconds() + interval;
-    if (secs >= 58)
-      secs = interval;
-    rtc.setAlarmSeconds(secs);
-    rtc.enableAlarm(rtc.MATCH_SS);
-
     deepsleep();
     if (digitalRead(SW0) == LOW) {
-      cnt++; // do something here, e.g. check sensors and send a message
+      SwitchInput();
     }
   } else {
     sleep();  // timer and radio interrupts will wakeup us
