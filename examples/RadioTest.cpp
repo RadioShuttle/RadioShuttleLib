@@ -73,6 +73,15 @@ const RadioShuttle::RadioProfile myProfile[] =  {
 };
 
 
+struct sensor {
+    uint8_t  version;
+    uint8_t  padding;
+    uint16_t pm25;
+    uint16_t pm10;
+    uint16_t id;
+} PMAppData;
+
+
 void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID, int status, void *buffer, int length)
 {
     switch(status) {
@@ -88,7 +97,14 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
 
         case RadioShuttle::MS_RecvData:			// a simple input message
             dprintf("MSG_RecvData ID: %d, len=%d", msgID, length);
+        {
+            struct sensor *p = (sensor *)buffer;
+            if (length == sizeof(struct sensor) && p->version == 1) {
+            	dprintf("ParticalData: PM10: %.1f (μg/m3)   PM2.5: %.1f (μg/m3)    ID: %d", (float)p->pm10 / 10.0, (float)p->pm25 / 10.0, p->id);
+
+            }
             // dump("MSG_RecvData", buffer, length);
+        }
             break;
         case RadioShuttle::MS_RecvDataConfirmed:	// received a confirmed message
             dprintf("MSG_RecvDataConfirmed ID: %d, len=%d", msgID, length);
@@ -164,6 +180,7 @@ int RadioTest()
 	    err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler, samplePassword, sizeof(samplePassword)-1);
     } else {
         err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler);
+        err = rs->RegisterApplication(10, &TempSensorRecvHandler);
     }
     if (err)
         return err;

@@ -29,7 +29,7 @@
 //#define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
 // #define BOARD_REV_301  1		// board with Lipo power supply/charger, micro USB
 #define BOARD_REV_630  1		// board with Lipo power supply/charger, micro USB
-// #define BOARD_REV_720  1		// Maker Faire Hannoer revision, micro USB
+// #define BOARD_REV_720  1		// Maker Faire Hannover revision, micro USB
 
 #define FEATURE_LORA  1
 
