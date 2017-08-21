@@ -171,14 +171,8 @@ void setup() {
 
   rtc.setTime(00, 00, 00);
   rtc.setDate(00, 00, 17);
-
-  int interval = 5;
-  int secs = rtc.getSeconds() + interval;
-  if (secs >= 58)
-    secs = interval;
-  rtc.setAlarmSeconds(secs);
-  rtc.enableAlarm(rtc.MATCH_SS);
   rtc.attachInterrupt(alarmMatch);
+  alarmMatch();
 
   dprintf("USBStatus: %s", SerialUSB_active == true ? "SerialUSB_active" : "SerialUSB_disbaled");
   if (!SerialUSB_active) {
@@ -269,7 +263,6 @@ void loop() {
       cnt++; // it is time to read the sensor data.
   }
 
-
   if (cnt != pressedCount) {
       int flags = 0;
       // flags |= RadioShuttle::MF_NeedsConfirm; // optional
@@ -279,21 +272,19 @@ void loop() {
       if (server) {
         rs->SendMsg(myPMSensorApp, NULL, 0, flags, remoteDeviceID);
       } else {
- #ifdef BOOSTER_EN50
-        boost50 = 1;
- #endif
+#ifdef BOOSTER_EN50
+        boost50 = 1;     
+#endif
         uint32_t start = s_getTicker();
         bool gotData = false;
-
         while (s_getTicker() < (start+pm.getWarmUpSeconds())) {
           if (pm.ReadRecord())
             gotData = true;
        }
- #ifdef BOOSTER_EN50
+#ifdef BOOSTER_EN50
         boost50 = 0;
- #endif
+#endif
         if (gotData) {
-          dprintf("gotData"); 
           memset(&PMAppData, 0, sizeof(PMAppData));
           PMAppData.version = 1;
           PMAppData.pm25 = pm.getPM25();
