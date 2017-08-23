@@ -26,10 +26,10 @@
 
 #elif __SAMD21G18A__ // Zero
 
-//#define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
+// #define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
 // #define BOARD_REV_301  1		// board with Lipo power supply/charger, micro USB
-#define BOARD_REV_630  1		// board with Lipo power supply/charger, micro USB
-// #define BOARD_REV_720  1		// Maker Faire Hannover revision, micro USB
+// #define BOARD_REV_630  1		// board with Lipo power supply/charger, micro USB
+#define BOARD_REV_720  1		// Maker Faire Hannover revision, micro USB
 
 #define FEATURE_LORA  1
 
@@ -52,7 +52,7 @@
 #define LORA_DIO4       5             // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
-#elif BOARD_REV_630
+#elif defined (BOARD_REV_630) || defined (BOARD_REV_720)
 
 #define SW0       		12              // switch needs pullup.
 #define LED       		LED_BUILTIN     // 13

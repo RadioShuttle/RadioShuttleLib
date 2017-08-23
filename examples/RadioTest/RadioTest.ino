@@ -37,8 +37,9 @@ enum SensorsIDs { // Must be unique world wide.
 #else
     myDeviceID = 9,
     // myCode = 0x20EE91DE, // Atmel Board
-    myCode = 0x112B92ED, //Board r6.3 green pcb, red tactile
+    // myCode = 0x112B92ED, //Board r6.3 green pcb, red tactile
     // myCode = 0x194F6298, //Board r6.3 green pcb, black tactile
+    myCode = 0x21C3B117,    //Board r7.2, blue SN 14
     remoteDeviceID = 1,
 #endif
 };
@@ -130,8 +131,12 @@ void SwitchInput(void) {
 
 void alarmMatch()
 {
-  rtc.setAlarmTime(rtc.getHours(), rtc.getMinutes(), rtc.getSeconds()+5);
-  rtc.enableAlarm(rtc.MATCH_HHMMSS);
+  int interval = 5;
+  int secs = rtc.getSeconds() + interval;
+  if (secs >= 58)
+    secs = interval;
+  rtc.setAlarmSeconds(secs);
+  rtc.enableAlarm(rtc.MATCH_SS);
 }
 
 Radio *radio;
@@ -146,7 +151,9 @@ void setup() {
 
   rtc.setTime(00, 00, 00);
   rtc.setDate(00, 00, 17);
-
+  rtc.attachInterrupt(alarmMatch);
+  alarmMatch();
+  
   dprintf("USBStatus: %s", SerialUSB_active == true ? "SerialUSB_active" : "SerialUSB_disbaled");
   if (!SerialUSB_active) {
       for (int i = 0; i < 10; i++) { // lets link the LED to show that SerialUSB is off.
@@ -213,7 +220,7 @@ void setup() {
     dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
   } else {
     err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
-    //err = rs->Startup(RadioShuttle::RS_Node_Offline);
+    // err = rs->Startup(RadioShuttle::RS_Node_Offline);
     dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
     if (rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myTempSensorApp, remoteDeviceID);
@@ -248,19 +255,15 @@ void loop() {
   led = 0;
   if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
     /*
-     * A periodic wakeup is needed in deepsleep to allow checking for events.
      * In deepsleep() the CPU is turned off, lowest power mode.
+     * we receive a wakeup every 5 seconds to allow to work
+     * in sleep the SW0 handler gets called.
+     * in deepsleep we need to check the state of the SW0 switch 
+     * and call the SwitchInput handler manually.
      */
-    int interval = 5;
-    int secs = rtc.getSeconds() + interval;
-    if (secs >= 58)
-      secs = interval;
-    rtc.setAlarmSeconds(secs);
-    rtc.enableAlarm(rtc.MATCH_SS);
-
     deepsleep();
     if (digitalRead(SW0) == LOW) {
-      cnt++; // do something here, e.g. check sensors and send a message
+      SwitchInput();
     }
   } else {
     sleep();  // timer and radio interrupts will wakeup us
