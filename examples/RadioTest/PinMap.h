@@ -72,6 +72,7 @@
 
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
+#define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
 
 /*
  * PIN_LED_RXL and PIN_LED_TXL are already defined.
