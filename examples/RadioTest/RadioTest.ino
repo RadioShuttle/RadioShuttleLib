@@ -18,15 +18,16 @@
 #ifdef FEATURE_LORA
 
 
-// #define RADIO_SERVER  1
+// #define RADIO_SERVER  1  // enable of Station device, comment out of Node device
 
 #ifdef RADIO_SERVER
 bool server = true;
 #else
 bool server = false;
 #endif
-bool usePassword = false; // password the can used indepenend of AES
-bool useAES = false;      // AES needs the usePassword option on
+bool usePassword = false;     // password the can used indepenend of AES
+bool useAES = false;          // AES needs the usePassword option on
+bool useNodeOffline = false;  // when idle turns the radio off and enters deelsleep
 
 enum SensorsIDs { // Must be unique world wide.
     myTempSensorApp = 0x0001,
@@ -39,7 +40,7 @@ enum SensorsIDs { // Must be unique world wide.
     // myCode = 0x20EE91DE, // Atmel Board
     // myCode = 0x112B92ED, //Board r6.3 green pcb, red tactile
     // myCode = 0x194F6298, //Board r6.3 green pcb, black tactile
-    myCode = 0x21C3B117,    //Board r7.2, blue SN 14
+    myCode = 0x21C3B117,    //Board r7.2, blue ID 14
     remoteDeviceID = 1,
 #endif
 };
@@ -57,14 +58,15 @@ unsigned char samplePassword[] = { "RadioShuttleFly" };
  * EU: 867.1, 867.3, 867.5, 867.7, 867.9 (additional channels)
  * Utilisation of these channels should not exceed 1% per hour per node
  * Bandwidth changes other than 125k requires different channels distances
+ * The last entry is a Freqency 
  */
 const RadioShuttle::RadioProfile myProfile[] =  {
     /*
      * Our default profile
-     * frequency, bandwidth, TX power, spreading factor
+     * frequency, bandwidth, TX power, spreading factor, frequency-offset
      */
-    { 868100000, 125000, 14, 7 },
-    { 0, 0, 0, 0 },
+    { 868100000, 125000, 14, 7, 0},
+    { 0, 0, 0, 0, 0 },
 };
 
 
@@ -80,7 +82,6 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
         case RadioShuttle::MS_SentTimeout:    // A timeout occurred, number of retires exceeded
             dprintf("MSG_SentTimeout ID: %d", msgID);
             break;
-
         case RadioShuttle::MS_RecvData:     // a simple input message
             dprintf("MSG_RecvData ID: %d, len=%d", msgID, length);
             // dump("MSG_RecvData", buffer, length);
@@ -98,7 +99,6 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
         case RadioShuttle::MS_AuthenicationRequired: // the password does not match.
             dprintf("MSG_AuthenicationRequired");
             break;
-
         case RadioShuttle::MS_StationConnected: // a confirmation that the connection was accepted
             dprintf("MSG_StationConnected");
             break;
@@ -169,7 +169,10 @@ void setup() {
   boost50 = 0;
  #endif
   intr.mode(PullUp);
-  intr.fall(callback(&SwitchInput));
+  if (!SerialUSB_active && useNodeOffline) 
+    intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
+  else 
+    intr.fall(callback(&SwitchInput));
   dprintf("MyRadioShuttle");
   dump("MyDump", "Hello World\r\n", sizeof("Hello World\r\n")-1);
 
@@ -219,9 +222,13 @@ void setup() {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
     dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
   } else {
-    err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
-    // err = rs->Startup(RadioShuttle::RS_Node_Offline);
-    dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
+    if (useNodeOffline) {
+      err = rs->Startup(RadioShuttle::RS_Node_Offline);
+      dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
+    } else {
+      err = rs->Startup(RadioShuttle::RS_Node_Online);
+      dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
+    }
     if (rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myTempSensorApp, remoteDeviceID);
     }
@@ -257,14 +264,8 @@ void loop() {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
      * we receive a wakeup every 5 seconds to allow to work
-     * in sleep the SW0 handler gets called.
-     * in deepsleep we need to check the state of the SW0 switch 
-     * and call the SwitchInput handler manually.
      */
     deepsleep();
-    if (digitalRead(SW0) == LOW) {
-      SwitchInput();
-    }
   } else {
     sleep();  // timer and radio interrupts will wakeup us
   }

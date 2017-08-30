@@ -66,10 +66,10 @@ unsigned char samplePassword[] = { "RadioShuttleFly" };
 const RadioShuttle::RadioProfile myProfile[] =  {
     /*
      * Our default profile
-     * frequency, bandwidth, TX power, spreading factor
+     * frequency, bandwidth, TX power, spreading factor, frequency-offset
      */
-    { 868100000, 125000, 14, 7 },
-    { 0, 0, 0, 0 },
+    { 868100000, 125000, 14, 7, 0 },
+    { 0, 0, 0, 0, 0 },
 };
 
 

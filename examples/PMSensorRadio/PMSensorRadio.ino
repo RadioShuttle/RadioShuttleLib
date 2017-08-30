@@ -28,6 +28,7 @@ bool server = false;
 #endif
 bool usePassword = false; // password the can used indepenend of AES
 bool useAES = false;      // AES needs the usePassword option on
+bool useNodeOffline = false;  // when idle turns the radio off and enters deelsleep
 
 enum SensorsIDs { // Must be unique world wide.
     myPMSensorApp = 10,
@@ -61,10 +62,10 @@ unsigned char samplePassword[] = { "RadioShuttleFly" };
 const RadioShuttle::RadioProfile myProfile[] =  {
     /*
      * Our default profile
-     * frequency, bandwidth, TX power, spreading factor
+     * frequency, bandwidth, TX power, spreading factor, frequency-offset
      */
-    { 868100000, 125000, 14, 7 },
-    { 0, 0, 0, 0 },
+    { 868100000, 125000, 14, 7, 0 },
+    { 0, 0, 0, 0, 0 },
 };
 
 
@@ -89,7 +90,6 @@ void PMSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID, 
         case RadioShuttle::MS_SentTimeout:    // A timeout occurred, number of retires exceeded
             dprintf("MSG_SentTimeout ID: %d", msgID);
             break;
-
         case RadioShuttle::MS_RecvData:     // a simple input message
             dprintf("MSG_RecvData ID: %d, len=%d", msgID, length);
             // dump("MSG_RecvData", buffer, length);
@@ -186,8 +186,11 @@ void setup() {
 
   led = 1;
   intr.mode(PullUp);
-  intr.fall(callback(&SwitchInput));
-
+  if (!SerialUSB_active && useNodeOffline) 
+    intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
+  else 
+    intr.fall(callback(&SwitchInput));
+    
   pm.SensorInit(&Serial1);
   lastPMReadTime = rtc.getEpoch();
 
@@ -242,9 +245,13 @@ void setup() {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
     dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
   } else {
-    //err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
-    err = rs->Startup(RadioShuttle::RS_Node_Offline);
-    dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
+    if (useNodeOffline) {
+      err = rs->Startup(RadioShuttle::RS_Node_Offline);
+      dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
+    } else {
+      err = rs->Startup(RadioShuttle::RS_Node_Online);
+      dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
+    }
     if (rs->AppRequiresAuthentication(myPMSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myPMSensorApp, remoteDeviceID);
     }
@@ -301,14 +308,8 @@ void loop() {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
      * we receive a wakeup every 5 seconds to allow to work
-     * in sleep the SW0 handler gets called.
-     * in deepsleep we need to check the state of the SW0 switch 
-     * and call the SwitchInput handler manually.
      */
     deepsleep();
-    if (digitalRead(SW0) == LOW) {
-      SwitchInput();
-    }
   } else {
     sleep();  // timer and radio interrupts will wakeup us
   }
