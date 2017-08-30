@@ -66,6 +66,7 @@ public:
         int Bandwidth;      // in Hz
         int TXPower;        // in dBm
         int SpreadingFaktor;// 7-12
+        int FrequencyOffset;// +/- in Hz
     };
     
     enum RadioType {
