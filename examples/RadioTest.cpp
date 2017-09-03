@@ -26,6 +26,7 @@ bool server = false;
 
 bool usePassword = false;	// password the can used indepenend of AES
 bool useAES = false;		// AES needs the usePassword option on
+bool useNodeOffline = false;// when idle turns the radio off and enters deelsleep
 
 Timeout timeout;
 
@@ -189,8 +190,13 @@ int RadioTest()
         err = rs->Startup(RadioShuttle::RS_Station_Basic);
         dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
     } else {
-        err = rs->Startup(RadioShuttle::RS_Node_Online/*RadioShuttle::RS_Node_Offline*/);
-        dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
+        if (useNodeOffline) {
+        	err = rs->Startup(RadioShuttle::RS_Node_Offline);
+        	dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
+        } else {
+            err = rs->Startup(RadioShuttle::RS_Node_Online);
+            dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
+        }
         if (rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
         	err = rs->Connect(myTempSensorApp, remoteDeviceID);
         }
@@ -218,7 +224,7 @@ int RadioTest()
         }
         
         timeout.attach(&timoutFunc, 25);
-        if (rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
+        if (rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
             deepsleep(); // CPU is turned off lowest power mode;
         } else {
             sleep();  // timer and radio interrupts will wakeup us
