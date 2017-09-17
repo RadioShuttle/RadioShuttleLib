@@ -49,7 +49,8 @@ typedef enum RSErrorCode {
     RS_RadioNotFound,				// The specified radio is not available
     RS_UnknownModemType,            // No FSK no LoRa modem type
     RS_MessageSizeExceeded,			// Message size too long
-    RS_InvalidProductCode,			// license does not match 
+    RS_InvalidProductCode,			// license does not match
+    RS_InvalidParam,				// invalid parameter.
 } RSCode;
 
 
@@ -128,6 +129,9 @@ public:
      */
     RadioShuttle(const char *deviceName);
 
+    /*
+     * Destructor, stop radios, free resources
+     */
     ~RadioShuttle();
     
     /*
@@ -217,6 +221,12 @@ public:
     RSCode KillMsg(int AppID, int msgID);
     
     /*
+     * Sets a new profile for a given radio with a given profile
+     * This can be called anytime after the RadioShuttle startup.
+     */
+    RSCode UpdateRadioProfile(Radio *radio, RadioType radioType, const struct RadioProfile *profile);
+    
+    /*
      * Sets the size value to the largest messages available
      * for all configured radios
      * The flags are important because encrypted messages need more space
@@ -241,6 +251,11 @@ public:
      * The RadioShuttle is idle when there are no ongoing jobs, etc.
      */
     bool Idle(void);
+    
+    /*
+     * Converts a RadioShuttle error code into a string.
+     */
+    const char *StrError(RSErrorCode err);
     
     /*
      * Starts the main RadioShuttle loop, returns 0 when nothing needs to be done
@@ -435,6 +450,11 @@ private:
      * The radio->_CADdetected contains the result (0 for idle, 1 for busy)
      */
     bool CadDetection(RadioEntry *re);
+    
+    /*
+     * init the RX/TX of the Radio.
+     */
+    RSCode _initRadio(RadioEntry *re);
     
     /*
      * The processing function returns a status code if it has been able to process
