@@ -48,8 +48,30 @@ MyRadioStatus::MyRadioStatus()
 #endif
 }
 
+MyRadioStatus::~MyRadioStatus()
+{
+    if (ledTX) {
+        if (inverted)
+            *ledTX = 1;
+        else
+            *ledTX = 0;
+    }
+    if (ledRX) {
+        if (inverted)
+            *ledRX = 1;
+        else
+            *ledRX = 0;
+    }
+    if (ledTimeout) {
+        if (inverted)
+            *ledTimeout = 1;
+        else
+            *ledTimeout = 0;
+    }
+}
+
 void
-MyRadioStatus::TXStart(int AppID, int toStation, int length)
+MyRadioStatus::TXStart(int AppID, int toStation, int length, int dBm)
 {
     if (ledTX) {
     	if (inverted)

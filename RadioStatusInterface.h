@@ -11,7 +11,7 @@ public:
     /*
      * Signaling that a radio message send has been initiated
      */
-    virtual	void TXStart(int AppID, int toStation, int length) = 0;
+    virtual	void TXStart(int AppID, int toStation, int length, int dBm) = 0;
     /*
      * Signaling that a radio message send has been completed
      */
