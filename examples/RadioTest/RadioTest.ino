@@ -43,10 +43,10 @@ enum SensorsIDs { // Must be unique world wide.
   remoteDeviceID = 9,
 #else
   myDeviceID = 9,
-  myCode = 0x20EE91DE, // Atmel Board
+  // myCode = 0x20EE91DE, // Atmel Board
   // myCode = 0x112B92ED, //Board r6.3 green pcb, red tactile
   // myCode = 0x194F6298, //Board r6.3 green pcb, black tactile
-  // myCode = 0x21C3B117,    //Board r7.2, blue ID 14
+  myCode = 0x21C3B117,    //Board r7.2, blue ID 14
   remoteDeviceID = 1,
 #endif
 };
@@ -132,7 +132,7 @@ RTCZero rtc;
 void SwitchInput(void) {
   static uint32_t lastInterrupt = 0;
   uint32_t ticks_ms = ms_getTicker();
-  if (!lastInterrupt || ticks_ms > (lastInterrupt + 100)) { // debounce 100ms.
+  if (!lastInterrupt || ticks_ms > (lastInterrupt + 300)) { // debounce 300ms.
     dprintf("SwitchInput");
     led = !led;
     pressedCount++;
