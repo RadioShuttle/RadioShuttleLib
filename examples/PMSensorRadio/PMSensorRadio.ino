@@ -19,6 +19,13 @@
 #ifdef FEATURE_LORA
 
 
+#define CHECK_ERROR_RET(func, err) { \
+    if (err) { \
+      dprintf("Error in %s: %s", func, rs->StrError(err)); \
+      return; \
+    } \
+  }
+
 // #define RADIO_SERVER  1
 
 #ifdef RADIO_SERVER
@@ -161,28 +168,21 @@ void alarmMatch()
 
 Radio *radio;
 RadioShuttle *rs;
+RadioStatusInterface *statusIntf;
+RadioSecurityInterface *securityIntf;
 PMSensor pm;
 
 void setup() {
   MYSERIAL.begin(230400);
-  InitSerial(&MYSERIAL, 3000); // wait 2000ms that the Serial Monitor opens, otherwise turn off USB.
+  InitSerial(&MYSERIAL, 5000, &led); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB.
   SPI.begin();
   rtc.begin();
-
-  rtc.setTime(00, 00, 00);
-  rtc.setDate(00, 00, 17);
   rtc.attachInterrupt(alarmMatch);
   alarmMatch();
+  if (rtc.getYear() == 0)
+    rtc.setDate(01, 01, 17);
+  dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", rtc.getDay(), rtc.getMonth(), rtc.getYear() + 2000, rtc.getHours(), rtc.getMinutes(), rtc.getSeconds());
 
-  dprintf("USBStatus: %s", SerialUSB_active == true ? "SerialUSB_active" : "SerialUSB_disbaled");
-  if (!SerialUSB_active) {
-      for (int i = 0; i < 10; i++) { // lets link the LED to show that SerialUSB is off.
-        led = 1;
-        delay(80);
-        led = 0;
-        delay(80);        
-      }
-  }
 
   led = 1;
   intr.mode(PullUp);
@@ -191,7 +191,7 @@ void setup() {
   else 
     intr.fall(callback(&SwitchInput));
     
-  pm.SensorInit(&Serial1);
+  pm.SensorInit(&Serial1);        // Serial1 = D0(RX), D1(TX)
   lastPMReadTime = rtc.getEpoch();
 
 #if 0 // enable this to test the sensor
@@ -201,8 +201,6 @@ void setup() {
 #endif
 
   RSCode err;
-  RadioStatusInterface *statusIntf = NULL;
-  RadioSecurityInterface *securityIntf = NULL;
 
   // RFM95
   radio = new SX1276Generic(NULL, RFM95_SX1276,
@@ -218,29 +216,28 @@ void setup() {
   rs->EnablePacketTrace(RadioShuttle::DEV_ID_ANY, true, true);
   
   err = rs->AddLicense(myDeviceID, myCode);
-  if (err)
-    return;  
+  CHECK_ERROR_RET("AddLicense", err);
 
   err = rs->AddRadio(radio, MODEM_LORA, myProfile);
-  if (err)
-    return;
+  CHECK_ERROR_RET("AddRadio", err);
+  dprintf("Radio: %d Hz, SF%d, %d kHz", myProfile[0].Frequency, myProfile[0].SpreadingFaktor, myProfile[0].Bandwidth / 1000);
+
   rs->AddRadioStatus(statusIntf);
-  if (err)
-    return;
+  CHECK_ERROR_RET("AddRadioStatus", err);
+
   rs->AddRadioSecurity(securityIntf);
-  if (err)
-    return;
+  CHECK_ERROR_RET("AddRadioSecurity", err);
+
   /*
    * The password parameter can be skipped if no password is required
    */
-   if (usePassword) {
+  if (usePassword) {
     err = rs->RegisterApplication(myPMSensorApp, &PMSensorRecvHandler, samplePassword, sizeof(samplePassword)-1);
-   } else {
+  } else {
     err = rs->RegisterApplication(myPMSensorApp, &PMSensorRecvHandler);
-   }
+  }
+  CHECK_ERROR_RET("RegisterApplication", err);
 
-  if (err)
-    return;
   if (server) {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
     dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
@@ -252,12 +249,11 @@ void setup() {
       err = rs->Startup(RadioShuttle::RS_Node_Online);
       dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
     }
-    if (rs->AppRequiresAuthentication(myPMSensorApp) == RS_PasswordSet) {
+    if (!err &&rs->AppRequiresAuthentication(myPMSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myPMSensorApp, remoteDeviceID);
     }
   }
-  if (err)
-    return;
+  CHECK_ERROR_RET("Startup", err);
  }
 
 

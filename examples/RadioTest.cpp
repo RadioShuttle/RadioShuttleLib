@@ -14,6 +14,13 @@
 
 #ifdef FEATURE_LORA
 
+#define CHECK_ERROR_RET(func, err) { \
+	if (err) { \
+		dprintf("Error in %s: %s", func, rs->StrError(err)); \
+		return err; \
+	} \
+}
+
 #ifndef TARGET_STM32L4
  #define RADIO_SERVER	1
 #endif
@@ -102,7 +109,6 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
             struct sensor *p = (sensor *)buffer;
             if (length == sizeof(struct sensor) && p->version == 1) {
             	dprintf("ParticalData: PM10: %.1f (μg/m3)   PM2.5: %.1f (μg/m3)    ID: %d", (float)p->pm10 / 10.0, (float)p->pm25 / 10.0, p->id);
-
             }
             // dump("MSG_RecvData", buffer, length);
         }
@@ -163,17 +169,18 @@ int RadioTest()
     rs->EnablePacketTrace(RadioShuttle::DEV_ID_ANY, true, true);
     
     err = rs->AddLicense(myDeviceID, myCode);
-    if (err)
-        return err;
+    CHECK_ERROR_RET("AddLicense", err);
+
     err = rs->AddRadio(radio, MODEM_LORA, myProfile);
-    if (err)
-        return err;
+    CHECK_ERROR_RET("AddRadio", err);
+    dprintf("Radio: %.1f MHz, SF%d, %.f kHz", (float)myProfile[0].Frequency/1000000.0, myProfile[0].SpreadingFaktor, (float)myProfile[0].Bandwidth/1000.0);
+  
     rs->AddRadioStatus(statusIntf);
-    if (err)
-        return err;
+    CHECK_ERROR_RET("AddRadioStatus", err);
+
     rs->AddRadioSecurity(securityIntf);
-    if (err)
-        return err;
+    CHECK_ERROR_RET("AddRadioSecurity", err);
+
     /*
      * The password parameter can be skipped if no password is required
      */
@@ -197,12 +204,11 @@ int RadioTest()
             err = rs->Startup(RadioShuttle::RS_Node_Online);
             dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
         }
-        if (rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
+        if (!err && rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
         	err = rs->Connect(myTempSensorApp, remoteDeviceID);
         }
     }
-    if (err)
-        return err;
+    CHECK_ERROR_RET("Startup", err);
 
     for(;;) {
         static int cnt = 0;
