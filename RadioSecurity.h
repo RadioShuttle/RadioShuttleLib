@@ -10,7 +10,7 @@
 class RadioSecurity : public RadioSecurityInterface {
 public:
     RadioSecurity();
-    ~RadioSecurity();
+    virtual ~RadioSecurity();
     virtual int GetSecurityVersion(void);
     /*
      * The hash block size for SHA256 in bytes

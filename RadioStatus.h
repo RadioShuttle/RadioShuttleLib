@@ -9,7 +9,7 @@
 class MyRadioStatus : public RadioStatusInterface {
 public:
    	MyRadioStatus();
-   	~MyRadioStatus();
+    virtual ~MyRadioStatus();
     
     virtual	void TXStart(int AppID, int toStation, int length, int dBm);
     virtual void TXComplete(void);

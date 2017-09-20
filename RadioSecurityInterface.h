@@ -8,6 +8,8 @@
 
 class RadioSecurityInterface {
 public:
+    virtual ~RadioSecurityInterface() { }
+
     /*
      * Get security protocol version to allow
      * and differentiate between multiple security versions

@@ -8,6 +8,7 @@
 
 class RadioStatusInterface {
 public:
+    virtual ~RadioStatusInterface() { }
     /*
      * Signaling that a radio message send has been initiated
      */

@@ -55,18 +55,21 @@ MyRadioStatus::~MyRadioStatus()
             *ledTX = 1;
         else
             *ledTX = 0;
+        delete ledTX;
     }
     if (ledRX) {
         if (inverted)
             *ledRX = 1;
         else
             *ledRX = 0;
+        delete ledRX;
     }
     if (ledTimeout) {
         if (inverted)
             *ledTimeout = 1;
         else
             *ledTimeout = 0;
+        delete ledTimeout;
     }
 }
 

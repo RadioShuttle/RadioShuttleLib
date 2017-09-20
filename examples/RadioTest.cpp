@@ -138,54 +138,56 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
     }
 }
 
-extern volatile int pressedCount;
 
-int RadioTest()
+Radio *radio;
+RadioShuttle *rs;
+RadioStatusInterface *statusIntf;
+RadioSecurityInterface *securityIntf;
+
+int InitRadio()
 {
     Radio *radio;
     RSCode err;
-    RadioStatusInterface *statusIntf = NULL;
-    RadioSecurityInterface *securityIntf = NULL;
     timeout.attach(&timoutFunc, 10);
     
     
 #ifdef TARGET_DISCO_L072CZ_LRWAN1
     radio = new SX1276Generic(NULL, MURATA_SX1276,
-            LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
-            LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
-            LORA_ANT_RX, LORA_ANT_TX, LORA_ANT_BOOST, LORA_TCXO);
+                              LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+                              LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
+                              LORA_ANT_RX, LORA_ANT_TX, LORA_ANT_BOOST, LORA_TCXO);
     
     statusIntf = new MyRadioStatus();
 #else // RFM95
     radio = new SX1276Generic(NULL, RFM95_SX1276,
-            LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
-            LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
-#endif   
-
+                              LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+                              LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
+#endif
+    
     securityIntf = new RadioSecurity();
     
-    RadioShuttle *rs = new RadioShuttle("MyRadioShuttle");
+    rs = new RadioShuttle("MyRadioShuttle");
     
     rs->EnablePacketTrace(RadioShuttle::DEV_ID_ANY, true, true);
     
     err = rs->AddLicense(myDeviceID, myCode);
     CHECK_ERROR_RET("AddLicense", err);
-
+    
     err = rs->AddRadio(radio, MODEM_LORA, myProfile);
     CHECK_ERROR_RET("AddRadio", err);
     dprintf("Radio: %.1f MHz, SF%d, %.f kHz", (float)myProfile[0].Frequency/1000000.0, myProfile[0].SpreadingFaktor, (float)myProfile[0].Bandwidth/1000.0);
-  
+    
     rs->AddRadioStatus(statusIntf);
     CHECK_ERROR_RET("AddRadioStatus", err);
-
+    
     rs->AddRadioSecurity(securityIntf);
     CHECK_ERROR_RET("AddRadioSecurity", err);
-
+    
     /*
      * The password parameter can be skipped if no password is required
      */
     if (usePassword) {
-	    err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler, samplePassword, sizeof(samplePassword)-1);
+        err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler, samplePassword, sizeof(samplePassword)-1);
     } else {
         err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler);
         err = rs->RegisterApplication(10, &TempSensorRecvHandler);
@@ -198,17 +200,52 @@ int RadioTest()
         dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
     } else {
         if (useNodeOffline) {
-        	err = rs->Startup(RadioShuttle::RS_Node_Offline);
-        	dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
+            err = rs->Startup(RadioShuttle::RS_Node_Offline);
+            dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
         } else {
             err = rs->Startup(RadioShuttle::RS_Node_Online);
             dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
         }
         if (!err && rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
-        	err = rs->Connect(myTempSensorApp, remoteDeviceID);
+            err = rs->Connect(myTempSensorApp, remoteDeviceID);
         }
     }
     CHECK_ERROR_RET("Startup", err);
+    return 0;
+}
+
+void DeInitRadio()
+{
+    if (securityIntf) {
+        delete securityIntf;
+        securityIntf = NULL;
+    }
+    if (statusIntf) {
+        delete statusIntf;
+        statusIntf = NULL;
+    }
+    if (rs) {
+        delete rs;
+        rs = NULL;
+    }
+    if (radio) {
+        delete radio;
+        radio = NULL;
+    }
+}
+
+int RadioTest()
+{
+    extern volatile int pressedCount;
+#if 0
+    if (InitRadio() != 0)
+        return -1;
+    DeInitRadio();
+#endif
+    
+    if (InitRadio() != 0)
+        return -1;
+    
 
     for(;;) {
         static int cnt = 0;
