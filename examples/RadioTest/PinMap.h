@@ -36,7 +36,7 @@
 
 #if defined(BOARD_REV_301) || defined(BOARD_REV_200)
 
-#define SW0      		1   // switch needs pullup.
+#define SW0      		  1   // switch needs pullup.
 #define LED       		0
 #define MYSERIAL    	SerialUSB
 
