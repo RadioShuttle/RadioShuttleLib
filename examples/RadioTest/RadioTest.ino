@@ -20,7 +20,7 @@
 #define CHECK_ERROR_RET(func, err) { \
     if (err) { \
       dprintf("Error in %s: %s", func, rs->StrError(err)); \
-      return; \
+      return err; \
     } \
   }
 
@@ -150,34 +150,14 @@ void alarmMatch()
   rtc.enableAlarm(rtc.MATCH_SS);
 }
 
+
 Radio *radio;                         // the LoRa network interface
 RadioShuttle *rs;                     // the RadioShutlle protocol
 RadioStatusInterface *statusIntf;     // the optional status interface
 RadioSecurityInterface *securityIntf; // the optional security interface
 
-void setup() {
-  MYSERIAL.begin(230400);
-  InitSerial(&MYSERIAL, 5000, &led); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
-  SPI.begin();
-  rtc.begin();
-  rtc.attachInterrupt(alarmMatch);
-  alarmMatch();
-  if (rtc.getYear() == 0)
-    rtc.setDate(01, 01, 17);
-  dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", rtc.getDay(), rtc.getMonth(), rtc.getYear() + 2000, rtc.getHours(), rtc.getMinutes(), rtc.getSeconds());
-
-  led = 1;
-#ifdef BOOSTER_EN50
-  boost50 = 0;
-#endif
-  intr.mode(PullUp);
-  if (!SerialUSB_active && useNodeOffline)
-    intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
-  else
-    intr.fall(callback(&SwitchInput));
-  dprintf("Welcome to RadioShuttle");
-
-
+int InitRadio()
+{
   RSCode err;
 
   // RFM95
@@ -231,7 +211,57 @@ void setup() {
       err = rs->Connect(myTempSensorApp, remoteDeviceID);
     }
   }
-  CHECK_ERROR_RET("Startup", err);
+  CHECK_ERROR_RET("Startup", err); 
+}
+
+
+void DeInitRadio()
+{
+    if (securityIntf) {
+        delete securityIntf;
+        securityIntf = NULL;
+    }
+    if (statusIntf) {
+        delete statusIntf;
+        statusIntf = NULL;
+    }
+    if (rs) {
+        delete rs;
+        rs = NULL;
+    }
+    if (radio) {
+        delete radio;
+        radio = NULL;
+    }
+}
+
+
+void setup() {
+  MYSERIAL.begin(230400);
+  InitSerial(&MYSERIAL, 5000, &led); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
+  SPI.begin();
+  rtc.begin();
+  rtc.attachInterrupt(alarmMatch);
+  alarmMatch();
+  if (rtc.getYear() == 0)
+    rtc.setDate(01, 01, 17);
+  dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", rtc.getDay(), rtc.getMonth(), rtc.getYear() + 2000, rtc.getHours(), rtc.getMinutes(), rtc.getSeconds());
+
+#ifdef BOOSTER_EN50
+  boost50 = 0;
+  boost33 = 0;
+#endif
+
+  led = 1;
+  intr.mode(PullUp);
+  if (!SerialUSB_active && useNodeOffline)
+    intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
+  else
+    intr.fall(callback(&SwitchInput));
+  dprintf("Welcome to RadioShuttle");
+
+  if (InitRadio() != 0)
+    return;
 }
 
 
