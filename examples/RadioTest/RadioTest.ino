@@ -39,14 +39,14 @@ enum SensorsIDs { // Must be unique world wide.
   myTempSensorApp = 0x0001,
 #ifdef RADIO_SERVER
   myDeviceID = 1,
-  myCode = 0x20EE91D6, // Atmel Board DevID 1
+  myCode = 0x20EE91D6,    // Atmel Board DevID 1
   remoteDeviceID = 9,
 #else
   myDeviceID = 9,
   // myCode = 0x20EE91DE, // Atmel Board
-  // myCode = 0x112B92ED, //Board r6.3 green pcb, red tactile
-  // myCode = 0x194F6298, //Board r6.3 green pcb, black tactile
-  myCode = 0x21C3B117,    //Board r7.2, blue ID 14
+  // myCode = 0x112B92ED, // Board r6.3 green pcb, red tactile
+  // myCode = 0x194F6298, // Board r6.3 green pcb, black tactile
+  myCode = 0x21C3B117,    // Board r7.2, blue ID 14
   remoteDeviceID = 1,
 #endif
 };
@@ -127,7 +127,6 @@ DigitalOut boost33(BOOSTER_EN33);
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 RTCZero rtc;
-
 
 void SwitchInput(void) {
   static uint32_t lastInterrupt = 0;
@@ -212,6 +211,7 @@ int InitRadio()
     }
   }
   CHECK_ERROR_RET("Startup", err); 
+  return 0;
 }
 
 
@@ -237,8 +237,9 @@ void DeInitRadio()
 
 
 void setup() {
+  intr.mode(PullUp);
   MYSERIAL.begin(230400);
-  InitSerial(&MYSERIAL, 5000, &led); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
+  InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
   SPI.begin();
   rtc.begin();
   rtc.attachInterrupt(alarmMatch);
@@ -253,7 +254,6 @@ void setup() {
 #endif
 
   led = 1;
-  intr.mode(PullUp);
   if (!SerialUSB_active && useNodeOffline)
     intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
   else

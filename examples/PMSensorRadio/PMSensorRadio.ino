@@ -101,7 +101,9 @@ void PMSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID, 
       {
         struct sensor *p = (sensor *)buffer;
         if (length == sizeof(struct sensor) && p->version == 1) {
-          dprintf("ParticalData: PM10: %.1f (μg/m3)   PM2.5: %.1f (μg/m3)    ID: %d", (float)p->pm10 / 10.0, (float)p->pm25 / 10.0, p->id);
+          String pm10 =  String((float)p->pm10 / 10.0, 1);
+          String pm25 =  String((float)p->pm25 / 10.0, 1);
+          dprintf("ParticalData: PM10: %s (μg/m3)   PM2.5: %s (μg/m3)    ID: %d", pm10.c_str(), pm25.c_str(), p->id);
         }
       }
       // dump("MSG_RecvData", buffer, length);
@@ -230,6 +232,7 @@ int InitRadio()
     }
   }
   CHECK_ERROR_RET("Startup", err);
+  return 0;
 }
 
 
@@ -255,8 +258,9 @@ void DeInitRadio()
 
 
 void setup() {
+  intr.mode(PullUp);
   MYSERIAL.begin(230400);
-  InitSerial(&MYSERIAL, 5000, &led); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB.
+  InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB.
   SPI.begin();
   rtc.begin();
   rtc.attachInterrupt(alarmMatch);
@@ -271,7 +275,6 @@ void setup() {
 #endif
 
   led = 1;
-  intr.mode(PullUp);
   if (!SerialUSB_active && useNodeOffline)
     intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
   else
