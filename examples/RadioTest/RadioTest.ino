@@ -124,6 +124,9 @@ DigitalOut boost50(BOOSTER_EN50);
 #ifdef BOOSTER_EN33
 DigitalOut boost33(BOOSTER_EN33);
 #endif
+#ifdef DISPLAY_EN
+DigitalOut displayEnable(DISPLAY_EN);
+#endif
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 RTCZero rtc;
@@ -252,6 +255,10 @@ void setup() {
   boost50 = 0;
   boost33 = 0;
 #endif
+#ifdef DISPLAY_EN
+  displayEnable = 1;
+#endif
+
 
   led = 1;
   if (!SerialUSB_active && useNodeOffline)
