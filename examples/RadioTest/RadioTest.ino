@@ -256,7 +256,7 @@ void setup() {
   boost33 = 0;
 #endif
 #ifdef DISPLAY_EN
-  displayEnable = 1;
+  displayEnable = 1; // disconnects the display from the 3.3 power
 #endif
 
 
