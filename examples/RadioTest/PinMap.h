@@ -97,11 +97,31 @@
 /*
  * PIN_LED_RXL and PIN_LED_TXL are already defined.
  */
-
 #else
+
 #error "Unkown Board revision"
+
 #endif
 
-#else
+#elif defined(ARDUINO_ARCH_ESP32)   // the Heltec Board
+#define FEATURE_LORA  1
+
+#define SW0           0               // no pullup, TODO check setup code
+#define LED           2               // 
+#define MYSERIAL      Serial          // this is a USB Serial, however the Feather M0 calls it only Serial.
+
+#define LORA_SPI_MOSI   MOSI          // MOSI 27 Heltec, 23 Arduino-Dev
+#define LORA_SPI_MISO   MISO          // MISO 19 Heltec, 19 Arduino-Dev
+#define LORA_SPI_SCLK   SCK           // SCK   5 Heltec, 18 Arduino-Dev
+#define LORA_CS         18            // LORA_DEFAULT_SS_PIN 
+#define LORA_RESET      14            // LORA_DEFAULT_RESET_PIN
+#define LORA_DIO0       26            // LORA_DEFAULT_DIO0_PIN
+#define LORA_DIO1       NC            // Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
+#define LORA_DIO2       NC            // FhssChangeChannel when FreqHop is on, unused in RadioShuttle
+#define LORA_DIO3       NC            // used Cad Detection in RS_Node_Offline/Checking mode
+#define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
+#define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
+
+#else 
 #error "unkown board"
 #endif
