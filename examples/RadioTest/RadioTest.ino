@@ -11,11 +11,11 @@
 #include <RadioStatus.h>
 #include <RadioSecurity.h>
 #include <arduino-util.h>
-#include <RTCZero.h>
-
 
 
 #ifdef FEATURE_LORA
+
+extern void RTCInit(const char *date, const char *time);
 
 #define CHECK_ERROR_RET(func, err) { \
     if (err) { \
@@ -46,7 +46,8 @@ enum SensorsIDs { // Must be unique world wide.
   // myCode = 0x20EE91DE, // Atmel Board
   // myCode = 0x112B92ED, // Board r6.3 green pcb, red tactile
   // myCode = 0x194F6298, // Board r6.3 green pcb, black tactile
-  myCode = 0x21C3B117,    // Board r7.2, blue ID 14
+//   myCode = 0x21C3B117,    // Board r7.2, blue ID 14
+  myCode = 0x835487a0,    // Heltec ESP32 868 MHz board
   remoteDeviceID = 1,
 #endif
 };
@@ -129,7 +130,6 @@ DigitalOut displayEnable(DISPLAY_EN);
 #endif
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
-RTCZero rtc;
 
 void SwitchInput(void) {
   static uint32_t lastInterrupt = 0;
@@ -142,15 +142,6 @@ void SwitchInput(void) {
   }
 }
 
-void alarmMatch()
-{
-  int interval = 5;
-  int secs = rtc.getSeconds() + interval;
-  if (secs >= 58)
-    secs = interval;
-  rtc.setAlarmSeconds(secs);
-  rtc.enableAlarm(rtc.MATCH_SS);
-}
 
 
 Radio *radio;                         // the LoRa network interface
@@ -189,8 +180,8 @@ int InitRadio()
   CHECK_ERROR_RET("AddRadioSecurity", err);
 
   /*
-     The password parameter can be skipped if no password is required
-  */
+   * The password parameter can be skipped if no password is required
+   */
   if (usePassword) {
     err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler, samplePassword, sizeof(samplePassword) - 1);
   } else {
@@ -241,15 +232,10 @@ void DeInitRadio()
 
 void setup() {
   intr.mode(PullUp);
-  MYSERIAL.begin(230400);
+  MYSERIAL.begin(230400/2);
   InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
   SPI.begin();
-  rtc.begin();
-  rtc.attachInterrupt(alarmMatch);
-  alarmMatch();
-  if (rtc.getYear() == 0)
-    rtc.setDate(01, 01, 17);
-  dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", rtc.getDay(), rtc.getMonth(), rtc.getYear() + 2000, rtc.getHours(), rtc.getMinutes(), rtc.getSeconds());
+  RTCInit(__DATE__, __TIME__);
 
 #ifdef BOOSTER_EN50
   boost50 = 0;
@@ -259,16 +245,22 @@ void setup() {
   displayEnable = 1; // disconnects the display from the 3.3 power
 #endif
 
-
   led = 1;
-  if (!SerialUSB_active && useNodeOffline)
-    intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
-  else
+  if (!SerialUSB_active && useNodeOffline) {
+#ifdef ARDUINO_SAMD_ZERO
+    intr.low(callback(&SwitchInput)); // in D21 deepsleep supports only low/high.
+#else
     intr.fall(callback(&SwitchInput));
+#endif
+  } else {
+    intr.fall(callback(&SwitchInput));
+  }
+
   dprintf("Welcome to RadioShuttle");
 
   if (InitRadio() != 0)
     return;
+    
 }
 
 
@@ -295,7 +287,8 @@ void loop() {
   if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
-     * we receive a wakeup every 5 seconds to allow to work
+     * On the D21 we receive a RTC wakeup every 5 seconds to allow to work
+     * On the ESP32 an RTC wakeup can be specified, but SRAM gets lost.
      */
     deepsleep();
   } else {
