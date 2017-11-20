@@ -3,6 +3,9 @@
  * (c) 2017 Helmut Tschemernjak
  * 30826 Garbsen (Hannover) Germany
  */
+#ifdef ARDUINO 
+#define RS_MAJOR    1
+#define RS_MINOR    4
 
 #ifdef _VARIANT_ATMEL_SAMD21_XPRO_
 #define FEATURE_LORA	1
@@ -122,6 +125,16 @@
 #define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#define DISPLAY_ADDRESS 0x3c
+#define DISPLAY_SDA     4
+#define DISPLAY_SCL     15
+#define DISPLAY_RESET   16
+#endif
+
 #else 
 #error "unkown board"
 #endif
+
+#endif // Arduino
+
