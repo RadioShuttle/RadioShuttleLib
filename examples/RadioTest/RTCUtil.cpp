@@ -3,6 +3,9 @@
  * (c) 2017 Helmut Tschemernjak
  * 30826 Garbsen (Hannover) Germany
  */
+
+#ifdef ARDUINO 
+
 #include "PinMap.h"
 #include <arduino-mbed.h>
 #include <sx1276-mbed-hal.h>
@@ -67,6 +70,7 @@ extern void RTCInit(const char *date, const char *timestr)
   dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", rtc.getDay(), rtc.getMonth(), rtc.getYear() + 2000, rtc.getHours(), rtc.getMinutes(), rtc.getSeconds());
   dprintf("Hours: %d", rtc.getHours() * 3600);
 }
+
 #elif ARDUINO_ARCH_ESP32 
 
 RTC_DATA_ATTR int bootCount = 0;
@@ -210,3 +214,5 @@ extern void RTCInit(const char *date, const char *timestr)
 #error "Unkown platform"
 #endif
 #endif // FEATURE_LORA
+#endif // ARDUINO 
+

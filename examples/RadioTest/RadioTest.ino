@@ -256,7 +256,7 @@ void setup() {
     intr.fall(callback(&SwitchInput));
   }
 
-  dprintf("Welcome to RadioShuttle");
+  dprintf("Welcome to RadioShuttle v%d.%d", RS_MAJOR, RS_MINOR);
 
   if (InitRadio() != 0)
     return;
