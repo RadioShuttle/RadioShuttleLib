@@ -126,6 +126,8 @@
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#undef LED
+#define LED             25
 #define DISPLAY_ADDRESS 0x3c
 #define DISPLAY_SDA     4
 #define DISPLAY_SCL     15

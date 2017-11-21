@@ -188,28 +188,26 @@ extern void RTCInit(const char *date, const char *timestr)
   dprintf("ESP32: Revision: %d (%d MHz)", ESP.getChipRevision(), ESP.getCpuFreqMHz());
   // dprintf("TIME: %s", __TIME__);
   // dprintf("DATE: %s", __DATE__);
- }
 
-/*
 #if 0
-  dprintf("Enter deep sleep");
+  esp_light_sleep_start();
+#endif
 
-  esp_err_t esp_err; // ESP_OK
-  esp_err = esp_deep_sleep_enable_ext0_wakeup((gpio_num_t)SW0,0); //1 = High, 0 = Low
-  esp_deep_sleep(10000000);
-  // esp_light_sleep_start(); // does not exists?
-#else
-  esp_err_t esp_err; // ESP_OK
+#if 0
   // esp_err = gpio_pullup_dis(GPIO_NUM_xx);
   // esp_err = gpio_pulldown_en(GPIO_NUM_xx);
-  esp_err = esp_deep_sleep_enable_ext0_wakeup((gpio_num_t)SW0,0); //1 = High, 0 = Low
-  if (esp_err) {
-    dprintf("esp_deep_sleep_enable_ext0_wakeup: error %d", esp_err);
+  int err = esp_deep_sleep_enable_ext0_wakeup((gpio_num_t)SW0,0); //1 = High, 0 = Low
+  if (err) {
+    dprintf("esp_deep_sleep_enable_ext0_wakeup: error %d", err);
     return;
   }
+  esp_deep_sleep_enable_timer_wakeup(10000000); // or later esp_sleep_enable_timer_wakeup(10000000);
+  dprintf("Enter deep sleep");
   esp_deep_sleep_start();
- #endif
- */
+  // esp_light_sleep_start(); // does not exists?
+#endif
+}
+
 #else
 #error "Unkown platform"
 #endif

@@ -40,14 +40,16 @@ enum SensorsIDs { // Must be unique world wide.
 #ifdef RADIO_SERVER
   myDeviceID = 1,
   myCode = 0x20EE91D6,    // Atmel Board DevID 1
+  // myCode = 0xa12853b7,       // Heltec ESP32 433 MHz board 1
   remoteDeviceID = 9,
 #else
   myDeviceID = 9,
   // myCode = 0x20EE91DE, // Atmel Board
   // myCode = 0x112B92ED, // Board r6.3 green pcb, red tactile
   // myCode = 0x194F6298, // Board r6.3 green pcb, black tactile
-//   myCode = 0x21C3B117,    // Board r7.2, blue ID 14
-  myCode = 0x835487a0,    // Heltec ESP32 868 MHz board
+  // myCode = 0x21C3B117,    // Board r7.2, blue ID 14
+  myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
+  // myCode = 0x69ceedc0,  // Heltec ESP32 433 MHz board 9
   remoteDeviceID = 1,
 #endif
 };
