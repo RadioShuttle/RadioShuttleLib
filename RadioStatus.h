@@ -4,6 +4,10 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#include <Wire.h>
+#include "SSD1306.h"
+#endif
 
 
 class MyRadioStatus : public RadioStatusInterface {
@@ -17,10 +21,25 @@ public:
     virtual void RxCompleted(void);
     virtual void MessageTimeout(int AppID, int toStation);
     
+    void UpdateDisplay(bool invert);
 private:
     DigitalOut *ledTX;
     DigitalOut *ledRX;
     DigitalOut *ledTimeout;
+    int _totalTX;
+    int _totalRX;
+    int _totalError;
+    int _totalTimeout;
+    
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    SSD1306 *display;
+    DigitalOut *displayReset;
+    char _line1[64];
+    char _line2[64];
+    char _line3[64];
+    char _line4[64];
+    char _line5[64];
+#endif
     bool inverted;
 };
 

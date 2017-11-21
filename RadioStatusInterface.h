@@ -31,4 +31,11 @@ public:
      * after the specified retry period
      */
     virtual void MessageTimeout(int AppID, int toStation) = 0;
+    
+    void SetStationID(int stationID) { _stationID = stationID; };
+    
+    void SetRadioType(const char *radioType) { _radioType = radioType; };
+
+    int _stationID;
+    const char *_radioType;
 };

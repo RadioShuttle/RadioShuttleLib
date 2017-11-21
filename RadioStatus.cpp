@@ -16,12 +16,16 @@
 #endif
 #include "RadioStatusInterface.h"
 #include "RadioStatus.h"
-
 #ifdef FEATURE_LORA
 
 
 MyRadioStatus::MyRadioStatus()
 {
+    _totalTX = 0;
+    _totalRX = 0;
+    _totalError = 0;
+    _totalTimeout = 0;
+
     ledTX = NULL;
     ledRX = NULL;
     ledTimeout = NULL;
@@ -45,6 +49,37 @@ MyRadioStatus::MyRadioStatus()
     ledRX = new DigitalOut(25); // red
     *ledRX = 1;
 #endif
+#endif
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    _line1[0] = 0;
+    _line2[0] = 0;
+    _line3[0] = 0;
+    _line4[0] = 0;
+    _line5[0] = 0;
+    
+#define DISPLAY_ADDRESS 0x3c
+#define DISPLAY_SDA     4
+#define DISPLAY_SCL     15
+#define DISPLAY_RESET   16    
+    displayReset = new DigitalOut(DISPLAY_RESET);
+    display = new SSD1306(DISPLAY_ADDRESS, DISPLAY_SDA, DISPLAY_SCL);
+    *displayReset = 0;
+    wait_ms(50);
+    *displayReset = 1;
+    display->init();
+    // display->flipScreenVertically();
+    display->setFont(ArialMT_Plain_16); // ArialMT_Plain_10);
+    display->clear();
+    display->drawString(0, 0, "RadioShuttle 1.4");
+    display->setFont(ArialMT_Plain_10);
+    int yoff = 17;
+    display->drawString(0, yoff, "Peer-to-Peer LoRa Protcol");
+    yoff += 12;
+    display->drawString(0, yoff, "Efficient, Fast, Secure");
+    yoff += 12;
+    display->drawString(0, yoff, "www.radioshuttle.de");
+    display->display();
+    
 #endif
 }
 
@@ -82,6 +117,11 @@ MyRadioStatus::TXStart(int AppID, int toStation, int length, int dBm)
         else
         	*ledTX = 1;
     }
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    snprintf(_line2, sizeof(_line2), "TX(%d) ID(%d) %d dBm", length, toStation, dBm);
+    this->UpdateDisplay(true);
+#endif
+    _totalTX++;
 }
 
 void
@@ -93,6 +133,9 @@ MyRadioStatus::TXComplete(void)
 		else
 			*ledTX = 0;
     }
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+	//UpdateDisplay(false);
+#endif
 }
 
 void
@@ -104,6 +147,8 @@ MyRadioStatus::RxDone(int size, int rssi, int snr)
 		else
             *ledRX = 1;
     }
+    _totalRX++;
+    snprintf(_line3, sizeof(_line3), "RX(%d) rssi(%d) snr(%d)", size, rssi, snr);
 }
 
 void
@@ -115,6 +160,7 @@ MyRadioStatus::RxCompleted(void)
         else
         	*ledRX = 0;
     }
+    // UpdateDisplay(false);
 }
 
 void
@@ -122,6 +168,38 @@ MyRadioStatus::MessageTimeout(int App, int toStation)
 {
     if (ledTimeout)
     	*ledTimeout = 1;
+    _totalTimeout++;
+    UpdateDisplay(true);
+}
+
+
+void
+MyRadioStatus::UpdateDisplay(bool invert)
+{
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    int yoff = 0;
+    int hight = 12;
+    snprintf(_line1, sizeof(_line1), "%s (%d) 12:10:08", _radioType, _stationID);
+    snprintf(_line4, sizeof(_line4), "Packets RX(%d) TX(%d)", _totalRX, _totalTX);
+    snprintf(_line5, sizeof(_line5), "RX-Error(%d) Timeout(%d)", _totalError, _totalTimeout);
+    if (inverted)
+        display->invertDisplay();
+    display->setFont(ArialMT_Plain_10);
+    display->clear();
+
+    display->drawString(0, yoff, String(_line1));
+    yoff += hight;
+    display->drawString(0, yoff, String(_line2));
+    yoff += hight;
+    display->drawString(0, yoff, String(_line3));
+    yoff += hight;
+    display->drawString(0, yoff, String(_line4));
+    yoff += hight;
+    display->drawString(0, yoff, String(_line5));
+    yoff += hight;
+    
+    display->display();
+#endif
 }
 
 #endif // FEATURE_LORA
