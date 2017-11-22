@@ -30,6 +30,7 @@ private:
     int _totalRX;
     int _totalError;
     int _totalTimeout;
+    bool inverted;
     
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
     SSD1306 *display;
@@ -39,7 +40,7 @@ private:
     char _line3[64];
     char _line4[64];
     char _line5[64];
+    bool invertedDisplay;
 #endif
-    bool inverted;
 };
 

@@ -8,6 +8,7 @@
 #ifdef ARDUINO
 #include <Arduino.h>
 #include "arduino-mbed.h"
+#include <time.h>
 #define FEATURE_LORA    1
 #endif
 #ifdef __MBED__
@@ -51,6 +52,7 @@ MyRadioStatus::MyRadioStatus()
 #endif
 #endif
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    invertedDisplay = false;
     _line1[0] = 0;
     _line2[0] = 0;
     _line3[0] = 0;
@@ -79,7 +81,6 @@ MyRadioStatus::MyRadioStatus()
     yoff += 12;
     display->drawString(0, yoff, "www.radioshuttle.de");
     display->display();
-    
 #endif
 }
 
@@ -119,7 +120,7 @@ MyRadioStatus::TXStart(int AppID, int toStation, int length, int dBm)
     }
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
     snprintf(_line2, sizeof(_line2), "TX(%d) ID(%d) %d dBm", length, toStation, dBm);
-    this->UpdateDisplay(true);
+    UpdateDisplay(true);
 #endif
     _totalTX++;
 }
@@ -134,7 +135,7 @@ MyRadioStatus::TXComplete(void)
 			*ledTX = 0;
     }
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
-	//UpdateDisplay(false);
+	UpdateDisplay(false);
 #endif
 }
 
@@ -148,7 +149,10 @@ MyRadioStatus::RxDone(int size, int rssi, int snr)
             *ledRX = 1;
     }
     _totalRX++;
-    snprintf(_line3, sizeof(_line3), "RX(%d) rssi(%d) snr(%d)", size, rssi, snr);
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    snprintf(_line3, sizeof(_line3), "RX(%d) RSSI(%d) SNR(%d)", size, rssi, snr);
+    UpdateDisplay(true);
+#endif
 }
 
 void
@@ -160,7 +164,9 @@ MyRadioStatus::RxCompleted(void)
         else
         	*ledRX = 0;
     }
-    // UpdateDisplay(false);
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    UpdateDisplay(false);
+#endif
 }
 
 void
@@ -169,21 +175,32 @@ MyRadioStatus::MessageTimeout(int App, int toStation)
     if (ledTimeout)
     	*ledTimeout = 1;
     _totalTimeout++;
-    UpdateDisplay(true);
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+    UpdateDisplay(false);
+#endif
 }
 
 
 void
-MyRadioStatus::UpdateDisplay(bool invert)
+MyRadioStatus::UpdateDisplay(bool invertDisplay)
 {
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
     int yoff = 0;
     int hight = 12;
-    snprintf(_line1, sizeof(_line1), "%s (%d) 12:10:08", _radioType, _stationID);
+    time_t t = time(NULL);
+    struct tm mytm;
+    localtime_r(&t, &mytm);
+
+    snprintf(_line1, sizeof(_line1), "%s (%d) %02d:%02d:%02d", _radioType, _stationID,
+             mytm.tm_hour, mytm.tm_min, mytm.tm_sec);
     snprintf(_line4, sizeof(_line4), "Packets RX(%d) TX(%d)", _totalRX, _totalTX);
-    snprintf(_line5, sizeof(_line5), "RX-Error(%d) Timeout(%d)", _totalError, _totalTimeout);
-    if (inverted)
+    snprintf(_line5, sizeof(_line5), "RXErr(%d) TOut(%d) %.2f %d", _totalError, _totalTimeout, (double)_frequency/1000000.0, _spreadingFactor);
+#if 1
+    if (invertDisplay)
         display->invertDisplay();
+    else
+        display->normalDisplay();
+#endif
     display->setFont(ArialMT_Plain_10);
     display->clear();
 

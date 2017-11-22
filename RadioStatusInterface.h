@@ -36,6 +36,11 @@ public:
     
     void SetRadioType(const char *radioType) { _radioType = radioType; };
 
-    int _stationID;
-    const char *_radioType;
+    void SetRadioParams(int frequency, int spreadingFactor) {
+        _frequency = frequency; _spreadingFactor = spreadingFactor; };
+    
+    int _frequency;			/* automaticlally set on RadioShuttle::Startup  */
+    int _spreadingFactor;	/* automaticlally set on RadioShuttle::Startup */
+    int _stationID;			/* automaticlally set */
+    const char *_radioType;	/* automaticlally set */
 };
