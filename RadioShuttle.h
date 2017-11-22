@@ -264,6 +264,11 @@ public:
     const char *StrError(RSErrorCode err);
     
     /*
+     * Converts the radio type into a clear text name
+     */
+    const char *GetRadioName(RadioType radioType);
+    
+    /*
      * Starts the main RadioShuttle loop, returns 0 when nothing needs to be done
      * Retuns > 0 when it should be called again
      * RunShuttle is called on user level (non-interrupt level)
@@ -305,6 +310,7 @@ private:
         int maxTimeOnAir;
         int retry_ms;
         uint32_t lastTxDone;
+        volatile bool txDoneReceived;
         uint32_t random;
         uint32_t random2;
     };
