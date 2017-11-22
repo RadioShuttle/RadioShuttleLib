@@ -11,7 +11,7 @@
 #define FEATURE_LORA	1
 
 #define	SW0				3		// switch needs pullup.
-#define LED             LED_BUILTIN
+#define LED       LED_BUILTIN
 
 #define MYSERIAL          Serial
 
@@ -102,7 +102,7 @@
  */
 #else
 
-#error "Unkown Board revision"
+#error "Unkown D21 board revision"
 
 #endif
 
