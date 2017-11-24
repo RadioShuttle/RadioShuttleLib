@@ -197,15 +197,13 @@ int InitRadio()
     
     if (server) {
         err = rs->Startup(RadioShuttle::RS_Station_Basic);
-        dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
+        dprintf("Startup as a Server: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
     } else {
-        if (useNodeOffline) {
+        if (useNodeOffline)
             err = rs->Startup(RadioShuttle::RS_Node_Offline);
-            dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
-        } else {
+    	else
             err = rs->Startup(RadioShuttle::RS_Node_Online);
-            dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
-        }
+        dprintf("Startup as a Node: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
         if (!err && rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
             err = rs->Connect(myTempSensorApp, remoteDeviceID);
         }

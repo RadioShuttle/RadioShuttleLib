@@ -39,8 +39,10 @@ enum SensorsIDs { // Must be unique world wide.
   myTempSensorApp = 0x0001,
 #ifdef RADIO_SERVER
   myDeviceID = 1,
-  myCode = 0x20EE91D6,    // Atmel Board DevID 1
+  // myCode = 0x20EE91D6,    // Atmel Board DevID 1
   // myCode = 0xa12853b7,       // Heltec ESP32 433 MHz board 1
+  myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
+
   remoteDeviceID = 9,
 #else
   myDeviceID = 9,
@@ -49,6 +51,7 @@ enum SensorsIDs { // Must be unique world wide.
   // myCode = 0x194F6298, // Board r6.3 green pcb, black tactile
   // myCode = 0x21C3B117,    // Board r7.2, blue ID 14
   myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
+  // myCode = 0xdf5c253a,    // 2nd Heltec ESP32 868 MHz board
   // myCode = 0x69ceedc0,  // Heltec ESP32 433 MHz board 9
   remoteDeviceID = 1,
 #endif
@@ -193,15 +196,13 @@ int InitRadio()
 
   if (server) {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
-    dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
+    dprintf("Startup as a Server: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
   } else {
-    if (useNodeOffline) {
+    if (useNodeOffline)
       err = rs->Startup(RadioShuttle::RS_Node_Offline);
-      dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
-    } else {
+    else
       err = rs->Startup(RadioShuttle::RS_Node_Online);
-      dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
-    }
+    dprintf("Startup as a Node: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
     if (!err && rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myTempSensorApp, remoteDeviceID);
     }
