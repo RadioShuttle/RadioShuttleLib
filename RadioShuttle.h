@@ -32,6 +32,9 @@ using namespace std;
 #include "RadioStatusInterface.h"
 #include "RadioSecurityInterface.h"
 
+#ifdef ARDUINO
+#define map	std::map // map clashes with Arduino map()
+#endif
 #ifdef FEATURE_LORA
 
 
