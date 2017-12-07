@@ -65,7 +65,7 @@ extern void RTCInit(const char *date, const char *timestr)
     settimeofday(&tv, &tz);
   }
   
-  esp_deep_sleep_wakeup_cause_t wakeup_reason = esp_deep_sleep_get_wakeup_cause();
+  esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   if (wakeup_reason)
     dprintf("Boot: %s (bootCount: %d)", ESP32WakeUpReason(wakeup_reason), ++bootCount);
   dprintf("Boot: CPU(Pro): %s", ESP32ResetReason(rtc_get_reset_reason(0)));
