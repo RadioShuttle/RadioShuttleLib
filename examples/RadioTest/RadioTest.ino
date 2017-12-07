@@ -42,7 +42,6 @@ enum SensorsIDs { // Must be unique world wide.
   // myCode = 0x20EE91D6,    // Atmel Board DevID 1
   // myCode = 0xa12853b7,       // Heltec ESP32 433 MHz board 1
   myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
-
   remoteDeviceID = 9,
 #else
   myDeviceID = 9,
@@ -256,7 +255,7 @@ void setup() {
     intr.fall(callback(&SwitchInput));
 #endif
   } else {
-    intr.fall(callback(&SwitchInput));
+   intr.fall(callback(&SwitchInput));
   }
 
   dprintf("Welcome to RadioShuttle v%d.%d", RS_MAJOR, RS_MINOR);
@@ -291,7 +290,7 @@ void loop() {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
      * On the D21 we receive a RTC wakeup every 5 seconds to allow to work
-     * On the ESP32 an RTC wakeup can be specified, but SRAM gets lost.
+     * On the ESP32 an RTC a light sleep suspends work for a second.
      */
     deepsleep();
   } else {
