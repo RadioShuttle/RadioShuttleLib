@@ -9,7 +9,7 @@
 #include "PinMap.h"
 #include <arduino-mbed.h>
 #include <arduino-util.h>
-#ifdef ARDUINO_SAMD_ZERO 
+#if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)
 #include <RTCZero.h>
 #elif ARDUINO_ARCH_ESP32
 #include <rom/rtc.h>
@@ -19,7 +19,8 @@
 #ifdef FEATURE_LORA
 
 
-#ifdef ARDUINO_SAMD_ZERO 
+
+#if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)
 RTCZero rtc;
 
 void alarmMatch()

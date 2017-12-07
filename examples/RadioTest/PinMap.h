@@ -5,9 +5,10 @@
  */
 #ifdef ARDUINO 
 #define RS_MAJOR    1
-#define RS_MINOR    4
+#define RS_MINOR    5
 
-#ifdef _VARIANT_ATMEL_SAMD21_XPRO_
+#ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
+
 #define FEATURE_LORA	1
 
 #define	SW0				3		// switch needs pullup.
@@ -28,13 +29,13 @@
 #define LORA_DIO5       NC		        // NC   FSK mode ready / ClockOut, unused in RadioShuttle
 
 #elif __SAMD21G18A__ // Zero
+#define FEATURE_LORA  1
 
 // #define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
 // #define BOARD_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define BOARD_REV_630  1		// board with Lipo power supply/charger, micro USB
 #define BOARD_REV_720  1		// Maker Faire Hannover revision, micro USB
 
-#define FEATURE_LORA  1
 
 
 #if defined(BOARD_REV_301) || defined(BOARD_REV_200)
