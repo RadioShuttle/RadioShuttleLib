@@ -39,7 +39,7 @@ extern void RTCInit(const char *date, const char *timestr)
   rtc.attachInterrupt(alarmMatch);
   alarmMatch();
   time_t t = cvt_date(date, timestr);
-  if (rtc.getYear() == 0) {
+  if (rtc.getYear() == 0 || rtc.getEpoch() < (uint32_t)t) {
     rtc.setEpoch(t);
   }
   setTickerStartSecs(rtc.getSeconds() + (rtc.getMinutes()*60) + rtc.getHours() * 3600);
