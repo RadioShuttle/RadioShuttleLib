@@ -5,7 +5,7 @@
  */
 #ifdef ARDUINO 
 #define RS_MAJOR    1
-#define RS_MINOR    5
+#define RS_MINOR    6
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
