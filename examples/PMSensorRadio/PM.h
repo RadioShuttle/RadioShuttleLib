@@ -4,9 +4,15 @@
    30826 Garbsen (Hannover) Germany
 */
 
+#ifdef ARDUINO_ARCH_ESP32
+#define SERIALTYPE  HardwareSerial
+#else
+#define SERIALTYPE  Uart
+#endif
+
 class PMSensor {
   public:
-    bool SensorInit(Uart *serial, int baud = 9600);
+    bool SensorInit(SERIALTYPE *serial, int baud = 9600);
     bool ReadRecord(void);
     uint16_t getPM10(void);
     uint16_t getPM25(void);
@@ -35,6 +41,6 @@ private:
 private:
     SensorRec _rec;
     SensorRec _data;
-    Uart *_ser;
+    Stream *_ser;
     const static int PM_WARMUP_SECONDS = 20;
 };

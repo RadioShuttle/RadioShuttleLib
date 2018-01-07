@@ -16,7 +16,7 @@
 
 
 bool
-PMSensor::SensorInit(Uart *serial, int baud)
+PMSensor::SensorInit(SERIALTYPE *serial, int baud)
 {
   serial->begin(baud);
   _ser = serial;
@@ -68,6 +68,7 @@ PMSensor::PMChecksumOK()
   if (sum != _rec.sum) {
     return true;
   }
+  return false;
 }
 
 uint16_t

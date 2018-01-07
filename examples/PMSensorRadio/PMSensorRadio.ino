@@ -11,13 +11,13 @@
 #include <RadioStatus.h>
 #include <RadioSecurity.h>
 #include <arduino-util.h>
-#include <RTCZero.h>
 
 #include "PM.h"
 
 
 #ifdef FEATURE_LORA
 
+extern void RTCInit(const char *date, const char *time);
 
 #define CHECK_ERROR_RET(func, err) { \
     if (err) { \
@@ -140,9 +140,11 @@ DigitalOut boost50(BOOSTER_EN50);
 #ifdef BOOSTER_EN33
 DigitalOut boost33(BOOSTER_EN33);
 #endif
+#ifdef DISPLAY_EN
+DigitalOut displayEnable(DISPLAY_EN);
+#endif
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
-RTCZero rtc;
 
 uint32_t lastPMReadTime;
 const int PM_READ_INTERVAL = 60; // 60*30 secs, ususally it can be every 30 minutes
@@ -159,15 +161,6 @@ void SwitchInput(void) {
   }
 }
 
-void alarmMatch()
-{
-  int interval = 5;
-  int secs = rtc.getSeconds() + interval;
-  if (secs >= 58)
-    secs = interval;
-  rtc.setAlarmSeconds(secs);
-  rtc.enableAlarm(rtc.MATCH_SS);
-}
 
 
 Radio *radio;                         // the LoRa network interface
@@ -207,7 +200,7 @@ int InitRadio()
   CHECK_ERROR_RET("AddRadioSecurity", err);
 
   /*
-   *  The password parameter can be skipped if no password is required
+   * The password parameter can be skipped if no password is required
    */
   if (usePassword) {
     err = rs->RegisterApplication(myPMSensorApp, &PMSensorRecvHandler, samplePassword, sizeof(samplePassword) - 1);
@@ -218,23 +211,20 @@ int InitRadio()
 
   if (server) {
     err = rs->Startup(RadioShuttle::RS_Station_Basic);
-    dprintf("Startup as a Server: Station_Basic ID=%d", myDeviceID);
+    dprintf("Startup as a Server: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
   } else {
-    if (useNodeOffline) {
+    if (useNodeOffline)
       err = rs->Startup(RadioShuttle::RS_Node_Offline);
-      dprintf("Startup as a Node: RS_Node_Offline ID=%d", myDeviceID);
-    } else {
+    else
       err = rs->Startup(RadioShuttle::RS_Node_Online);
-      dprintf("Startup as a Node: RS_Node_Online ID=%d", myDeviceID);
-    }
+    dprintf("Startup as a Node: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
     if (!err && rs->AppRequiresAuthentication(myPMSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myPMSensorApp, remoteDeviceID);
     }
   }
-  CHECK_ERROR_RET("Startup", err);
+  CHECK_ERROR_RET("Startup", err); 
   return 0;
 }
-
 
 void DeInitRadio()
 {
@@ -262,27 +252,31 @@ void setup() {
   MYSERIAL.begin(230400);
   InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB.
   SPI.begin();
-  rtc.begin();
-  rtc.attachInterrupt(alarmMatch);
-  alarmMatch();
-  if (rtc.getYear() == 0)
-    rtc.setDate(01, 01, 17);
-  dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", rtc.getDay(), rtc.getMonth(), rtc.getYear() + 2000, rtc.getHours(), rtc.getMinutes(), rtc.getSeconds());
+  RTCInit(__DATE__, __TIME__);
 
 #ifdef BOOSTER_EN50
   boost50 = 0;
   boost33 = 0;
 #endif
+#ifdef DISPLAY_EN
+  displayEnable = 1; // disconnects the display from the 3.3 power
+#endif
 
   led = 1;
-  if (!SerialUSB_active && useNodeOffline)
-    intr.low(callback(&SwitchInput)); // in deepsleep only low/high are supported.
-  else
+  if (!SerialUSB_active && useNodeOffline) {
+#ifdef ARDUINO_SAMD_ZERO
+    intr.low(callback(&SwitchInput)); // in D21 deepsleep supports only low/high.
+#else
     intr.fall(callback(&SwitchInput));
-  dprintf("Welcome to RadioShuttle - PMSensor");
+#endif
+  } else {
+   intr.fall(callback(&SwitchInput));
+  }
+    
+  dprintf("Welcome to RadioShuttle - PMSensor v%d.%d", RS_MAJOR, RS_MINOR);
 
   pm.SensorInit(&Serial1);        // Serial1 = D0(RX), D1(TX)
-  lastPMReadTime = rtc.getEpoch();
+  lastPMReadTime = s_getTicker();
 
 #if 0 // enable this to test the sensor
   boost50 = 1;
@@ -298,9 +292,9 @@ void setup() {
 void loop() {
   static int cnt = 0;
 
-  uint32_t rtctime = rtc.getEpoch();
-  if (!server && rtctime > (lastPMReadTime + PM_READ_INTERVAL)) {
-    lastPMReadTime = rtctime;
+  uint32_t time = s_getTicker();
+  if (!server && time > (lastPMReadTime + PM_READ_INTERVAL)) {
+    lastPMReadTime = time;
     cnt++; // it is time to read the sensor data.
   }
 
@@ -341,7 +335,8 @@ void loop() {
   if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
-     * we receive a wakeup every 5 seconds to allow to work
+     * On the D21 we receive a RTC wakeup every 5 seconds to allow to work
+     * On the ESP32 an RTC a light sleep suspends work for a second.
      */
     deepsleep();
   } else {
