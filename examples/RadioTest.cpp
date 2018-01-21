@@ -41,9 +41,9 @@ enum SensorsIDs { // Must be unique world wide.
 #ifdef RADIO_SERVER
     myDeviceID = 1,
     myCode = 0,
-    remoteDeviceID = 9,
+    remoteDeviceID = 14,
 #else
-    myDeviceID = 9,
+    myDeviceID = 14,
     myCode = 0,
     remoteDeviceID = 1,
 #endif
