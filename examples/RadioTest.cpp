@@ -33,16 +33,8 @@ bool server = false;
 
 bool usePassword = false;	// password the can used indepenend of AES
 bool useAES = false;		// AES needs the usePassword option on
-bool useNodeOffline = false;// when idle turns the radio off and enters deelsleep
+bool useNodeOffline = false;	// when idle turns the radio off and enters deelsleep
 
-Timeout timeout;
-
-void timoutFunc(void)
-{
-#ifdef TARGET_STM32L4
-    WatchDogUpdate();
-#endif
-}
 
 enum SensorsIDs { // Must be unique world wide.
     myTempSensorApp = 0x0001,
@@ -148,7 +140,6 @@ int InitRadio()
 {
     Radio *radio;
     RSCode err;
-    timeout.attach(&timoutFunc, 10);
     
     
 #ifdef TARGET_DISCO_L072CZ_LRWAN1
@@ -235,11 +226,6 @@ void DeInitRadio()
 int RadioTest()
 {
     extern volatile int pressedCount;
-#if 0
-    if (InitRadio() != 0)
-        return -1;
-    DeInitRadio();
-#endif
     
     if (InitRadio() != 0)
         return -1;
@@ -264,18 +250,41 @@ int RadioTest()
             cnt = pressedCount;
         }
         
-        timeout.attach(&timoutFunc, 25);
         if (rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
             deepsleep(); // CPU is turned off lowest power mode;
         } else {
             sleep();  // timer and radio interrupts will wakeup us
         }
         rs->RunShuttle(); // process all pending events
-#ifdef TARGET_STM32L4
-        WatchDogUpdate();
-#endif        
     }
     return 0;
 }
 
+
+int RadioUpdate(bool keyPressed)
+{
+    
+    if (keyPressed) {
+        int flags = 0;
+        flags |= RadioShuttle::MF_NeedsConfirm;  // optional
+        if (usePassword && useAES)
+            flags |= RadioShuttle::MF_Encrypted;
+        if (server) {
+            static char msg[] = "The server feels very good today";
+            rs->SendMsg(myTempSensorApp, msg, sizeof(msg), flags, remoteDeviceID);
+        } else {
+            static char msg[] = "Hello, the temperature is 26 celsius";
+            rs->SendMsg(myTempSensorApp, msg, sizeof(msg), flags, remoteDeviceID);
+        }
+    }
+    rs->RunShuttle();
+    return 0;
+}
+
+bool RadioISIdle()
+{
+    if (!rs)
+        return true;
+    return rs->Idle();
+}
 #endif // FEATURE_LORA

@@ -4,4 +4,7 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
-extern void RadioTest(void);
+extern int InitRadio(void);
+extern void RadioTest();
+extern int RadioUpdate(bool keyPressed);
+extern bool RadioISIdle();
