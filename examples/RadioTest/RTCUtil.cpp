@@ -44,6 +44,14 @@ extern void RTCInit(const char *date, const char *timestr)
   }
   setTickerStartSecs(rtc.getSeconds() + (rtc.getMinutes()*60) + rtc.getHours() * 3600);
   dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", rtc.getDay(), rtc.getMonth(), rtc.getYear() + 2000, rtc.getHours(), rtc.getMinutes(), rtc.getSeconds());
+
+  uint8_t reason = PM->RCAUSE.reg;
+  if (reason & (PM_RCAUSE_WDT | PM_RCAUSE_BOD33)) {
+    dprintf("Boot: CPU(D21) reset by: %s %s",
+      PM->RCAUSE.reg & PM_RCAUSE_WDT ? "WatchDog" : "",
+      PM->RCAUSE.reg & PM_RCAUSE_BOD33 ? "Brown-Out" : "");
+  }
+  InitWatchDog();
 }
 
 #elif ARDUINO_ARCH_ESP32 
