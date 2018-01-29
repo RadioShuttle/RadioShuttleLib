@@ -148,13 +148,13 @@ int InitRadio()
                               LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
                               LORA_ANT_RX, LORA_ANT_TX, LORA_ANT_BOOST, LORA_TCXO);
     
-    statusIntf = new MyRadioStatus();
 #else // RFM95
     radio = new SX1276Generic(NULL, RFM95_SX1276,
                               LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
                               LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
 #endif
     
+    statusIntf = new MyRadioStatus();
     securityIntf = new RadioSecurity();
     
     rs = new RadioShuttle("MyRadioShuttle");
