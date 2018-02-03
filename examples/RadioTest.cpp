@@ -263,7 +263,9 @@ int RadioTest()
 
 int RadioUpdate(bool keyPressed)
 {
-    
+    if (!rs)
+        return 0;
+        
     if (keyPressed) {
         int flags = 0;
         flags |= RadioShuttle::MF_NeedsConfirm;  // optional
