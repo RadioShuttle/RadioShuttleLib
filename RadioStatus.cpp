@@ -59,6 +59,12 @@ MyRadioStatus::MyRadioStatus()
     *ledRX = 1;
 #endif
 #endif
+#ifdef ARDUINO_ESP32_DEV // ESP32_ECO_POWER_REV_1
+    ledTX = new DigitalOut(2); 	// green
+    *ledTX = 0;
+    ledRX = new DigitalOut(12);	// red
+    *ledRX = 0;
+#endif
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
     invertedDisplay = false;
     _line1[0] = 0;
