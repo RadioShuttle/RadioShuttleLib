@@ -44,11 +44,13 @@ enum SensorsIDs { // Must be unique world wide.
   myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
   remoteDeviceID = 9,
 #else
-  myDeviceID = 9,
+  // myDeviceID = 130,
+  myDeviceID = 14,
   // myCode = 0x20EE91DE, // Atmel Board
   // myCode = 0x112B92ED, // Board r6.3 green pcb, red tactile
   // myCode = 0x194F6298, // Board r6.3 green pcb, black tactile
-  myCode = 0x21C3B117,    // Board r7.2, blue ID 14
+  myCode = 0x21C3B11C,    // Board r7.2, blue ID 14
+  // myCode = 0xCEBB8927,    // Boardd r1, ID 130
   // myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
   // myCode = 0xdf5c253a,    // 2nd Heltec ESP32 868 MHz board
   // myCode = 0x69ceedc0,  // Heltec ESP32 433 MHz board 9
@@ -234,7 +236,7 @@ void DeInitRadio()
 
 void setup() {
   intr.mode(PullUp);
-  MYSERIAL.begin(230400);
+  MYSERIAL.begin(230400/2);
   InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
   SPI.begin();
   RTCInit(__DATE__, __TIME__);

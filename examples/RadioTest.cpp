@@ -42,6 +42,7 @@ enum SensorsIDs { // Must be unique world wide.
     myDeviceID = 1,
     myCode = 0,
     remoteDeviceID = 14,
+    //remoteDeviceID = 130,
 #else
     myDeviceID = 14,
     myCode = 0,
