@@ -19,11 +19,18 @@
 #undef min
 #undef max
 #undef map
-#define us_ticker_read	us_getTicker
+#define my_us_ticker_read	us_getTicker
 #define STATIC_ASSERT   _Static_assert
 #define ASSERT assert
 using namespace std;
 #define FEATURE_LORA	1
+#endif
+
+#ifdef DEVICE_LOWPOWERTIMER
+#define MyTimeout LowPowerTimeout
+#define my_us_ticker_read	lp_ticker_read
+#else
+#define MyTimeout Timeout
 #endif
 
 #include <list>
@@ -539,7 +546,7 @@ private:
     list<ReceivedMsgEntry> _recvs;
     map<devid_t, SignalStrengthEntry> _signals;
     list<TimeOnAirSlotEntry> _airtimes;
-    Timeout *timer;
+    MyTimeout *timer;
     volatile uint32_t prevWakeup;
     int SetTimerCount;
     

@@ -2,6 +2,11 @@
 #include "mbed.h"
 #include "PinMap.h"
 #include "GenericPingPong.h"
+#ifdef DEVICE_LOWPOWERTIMER
+#define MyTimeout LowPowerTimeout
+#else
+#define MyTimeout Timeout
+#endif
 #include "sx1276-mbed-hal.h"
 #include "main.h"
 
