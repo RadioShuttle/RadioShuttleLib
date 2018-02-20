@@ -107,11 +107,52 @@
 
 #endif
 
-#elif defined(ARDUINO_ARCH_ESP32)   // the Heltec Board
+#elif defined(ARDUINO_ESP32_DEV)      // the ESP32 ECO Power Boards (with and without LoRa)
+
+#define ESP32_ECO_POWER_REV_1            // our rev1 ESP32 ECO Power Boards 
+
+#ifdef ESP32_ECO_POWER_REV_1
+#define ESP32_ECO_POWER   
+#define FEATURE_LORA  1
+
+#define SW0           0               // no pullup
+#define LED           2               // red LED
+#define LED2          12              // green LED
+#define MYSERIAL      Serial          // the a regular serial IO1_TXD0/IO3_RXD0
+
+#define LORA_SPI_MOSI   MOSI          // MOSI 23 Arduino-Dev
+#define LORA_SPI_MISO   MISO          // MISO 19 Arduino-Dev
+#define LORA_SPI_SCLK   SCK           // SCK  18 Arduino-Dev
+#define LORA_CS         5             // LORA_DEFAULT_SS_PIN 
+#define LORA_RESET      17            // LORA_DEFAULT_RESET_PIN
+#define LORA_DIO0       16            // LORA_DEFAULT_DIO0_PIN
+#define LORA_DIO1       NC            // Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
+#define LORA_DIO2       NC            // FhssChangeChannel when FreqHop is on, unused in RadioShuttle
+#define LORA_DIO3       NC            // used Cad Detection in RS_Node_Offline/Checking mode
+#define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
+#define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
+
+#define RTC_I2C_SDA     SDA           // DS3231 RTC Chip
+#define RTC_I2C_SDL     SDL           //
+#define RTC_INTR        SWO           // DS3231 RTC interrupt sharred with the switch
+
+#define EXT_POWER_SW    15            // Switch VDD on pin JP10
+#define EXT_POWER_ON    LOW
+#define EXT_POWER_OFF   HIGH
+
+#else
+
+#define SW0           0               // no pullup
+#define LED           2               // red LED
+#define MYSERIAL      Serial          // 
+
+#endif
+
+#elif defined(ARDUINO_Heltec_WIFI_LoRa_32)   // the Heltec Board
 #define FEATURE_LORA  1
 
 #define SW0           0               // no pullup, TODO check setup code
-#define LED           2               // 
+#define LED           25               // 
 #define MYSERIAL      Serial          // this is a USB Serial, however the Feather M0 calls it only Serial.
 
 #define LORA_SPI_MOSI   MOSI          // MOSI 27 Heltec, 23 Arduino-Dev
@@ -126,14 +167,10 @@
 #define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
-#undef LED
-#define LED             25
 #define DISPLAY_ADDRESS 0x3c
 #define DISPLAY_SDA     4
 #define DISPLAY_SCL     15
 #define DISPLAY_RESET   16
-#endif
 
 #else 
 #error "unkown board"
