@@ -71,6 +71,7 @@ class RadioShuttle
 public:
     typedef uint32_t	devid_t;
     static const int DEV_ID_ANY = 0;
+    static const int TX_POWER_AUTO = 9999;
     
     struct RadioProfile {
         int Frequency;      // in Hz
@@ -228,9 +229,11 @@ public:
     /*
      * Prepare sending data to a remote application
      * The request is queued for sending.
+     * valid flags see enum MsgFlags
+     * txPower allows to overwrite the txPower in dBm.
      * The data is busy until the AppRecvHandler is called
      */
-    RSCode SendMsg(int AppID, void *data, int len, int flags = 0, devid_t stationID = DEV_ID_ANY, int *msgID = NULL);
+    RSCode SendMsg(int AppID, void *data, int len, int flags = 0, devid_t stationID = DEV_ID_ANY, int txPower = TX_POWER_AUTO, int *msgID = NULL);
     /*
      * Removes a message from the queue
      */
@@ -347,6 +350,7 @@ private:
         int len;
         int flags;
         devid_t stationID;
+        int txPower;
         int msgID;
         int retryCount;
         
@@ -495,7 +499,7 @@ private:
      * compression and encryption, and finally sends a packet via the radio.
      * It returns true if we have been able to sent the message.
      */
-    bool SendMessage(RadioEntry *re, void *data, int len, int msgID, int AppID, devid_t stationID, int flags, int respWindow, uint8_t channel, uint8_t factor);
+    bool SendMessage(RadioEntry *re, void *data, int len, int msgID, int AppID, devid_t stationID, int flags, int txPower, int respWindow, uint8_t channel, uint8_t factor);
     
     /*
      * We keep a little cache list of the power needed for different stations
