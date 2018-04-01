@@ -13,6 +13,16 @@
 #include <RTCZero.h>
 #elif ARDUINO_ARCH_ESP32
 #include <rom/rtc.h>
+#include <driver/adc.h>
+#if defined (FEATURE_SI7021) || defined (FEATURE_SI7021)
+ #include <Wire.h>
+#endif
+#ifdef FEATURE_RTC_DS3231
+ #include "ds3231.h"
+#endif
+#ifdef FEATURE_SI7021
+  #include "Adafruit_Si7021.h"
+#endif
 #endif
 
 
@@ -33,7 +43,7 @@ void alarmMatch()
   rtc.enableAlarm(rtc.MATCH_SS);
 }
 
-extern void RTCInit(const char *date, const char *timestr)
+void RTCInit(const char *date, const char *timestr)
 {
   rtc.begin();
   rtc.attachInterrupt(alarmMatch);
@@ -56,12 +66,118 @@ extern void RTCInit(const char *date, const char *timestr)
 
 #elif ARDUINO_ARCH_ESP32 
 
-RTC_DATA_ATTR int bootCount = 0;
+#ifdef FEATURE_SI7021
+Adafruit_Si7021 *sensorSI7021;  
+#endif
 
-
-extern void RTCInit(const char *date, const char *timestr)
+#ifdef ESP32_ECO_POWER_REV_1
+float GetBatteryVoltage()
 {
-  if (!time(NULL)) {
+#ifdef EXT_POWER_SW
+  DigitalOut extPWR(EXT_POWER_SW);
+  extPWR = EXT_POWER_ON;
+#endif
+
+  float volt;
+
+  wait_ms(1);
+  analogSetPinAttenuation(BAT_POWER_ADC, ADC_0db); //  1.1248 Volt
+  wait_ms(20);  
+  
+  int value = 0;
+  for (int i = 0; i < 12; i++) {
+    value += analogRead(BAT_POWER_ADC);
+  }
+  value /= 12;
+  float voltstep = 1.1248/(float)(1<<12); // 12 bit 4096
+  volt = (float) ((value * voltstep) / 100) * 320; // 100k, 220k
+  dprintf("Power: %.2fV (ADC: %d)", volt, value); 
+
+#ifdef EXT_POWER_SW
+  extPWR = EXT_POWER_OFF; 
+  DigitalIn tmpPWR(EXT_POWER_SW);
+  tmpPWR.mode(PullUp); // turn off the power, PullUp will keep it off in deepsleep
+#endif
+  return volt;
+}
+
+#if 0
+float GetBatteryVoltageIDF()
+{
+  float volt;
+  DigitalOut extPWR(EXT_POWER_SW);
+  extPWR = EXT_POWER_ON;
+  wait_ms(1);
+  //adc_power_on();
+  adc1_config_width(ADC_WIDTH_12Bit);
+  adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_0db);  //  1.1248 Volt
+  wait_ms(20);  
+  
+  int value = 0;
+  for (int i = 0; i < 12; i++) {
+    value = adc1_get_raw(ADC1_CHANNEL_7); 
+  }
+  value /= 12;
+  float voltstep = 1.1248/(float)(1<<12); // 12 bit 4096
+  volt = (float) ((value * voltstep) / 100) * 320; // 100k, 220k
+  dprintf("Power: %.2fV (ADC: %d)", volt, value); 
+  extPWR = EXT_POWER_OFF; 
+
+  // adc_power_off();
+  return 0;
+}
+#endif // IDF
+
+#endif
+
+RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR bool hasSensor;
+
+
+void RTCInit(const char *date, const char *timestr)
+{
+#if defined (FEATURE_SI7021) || defined (FEATURE_SI7021)
+  Wire.begin();
+#endif
+
+  time_t now = time(NULL);
+  
+#ifdef FEATURE_RTC_DS3231
+  DS3231_init(DS3231_CONTROL_INTCN);
+  struct ts ds;
+  DS3231_get(&ds);
+  if (!now || now < ds.unixtime || now > ds.unixtime) {
+    time_t t = cvt_date(date, timestr);
+    if (!ds.unixtime || t > ds.unixtime) {
+      struct tm *tmp = gmtime(&t);
+      ds.sec = tmp->tm_sec;
+      ds.min = tmp->tm_min;
+      ds.hour = tmp->tm_hour;
+      ds.wday = tmp->tm_wday;
+      ds.mday = tmp->tm_mday;
+      ds.mon = tmp->tm_mon + 1;
+      ds.year =  tmp->tm_year + 1900;
+      DS3231_set(ds);
+      DS3231_get(&ds);    
+#if 0  
+      dprintf("%02d:%02d:%02d wday(%d) mday(%d) mon(%d) year(%d), ", ds.hour, ds.min, ds.sec, ds.wday, ds.mday, ds.mon, ds.year);
+      dprintf("RTC: %.2f°C", DS3231_get_treg());
+      time_t now = ds.unixtime;
+      dprintf("ctime: %s", ctime(&now));
+#endif
+    }
+    struct timeval tv;
+    memset(&tv, 0, sizeof(tv));
+    tv.tv_sec = ds.unixtime;;
+    struct timezone tz;
+    memset(&tz, 0, sizeof(tz));
+    tz.tz_minuteswest = 0;
+    tz.tz_dsttime = 0;
+    settimeofday(&tv, &tz);    
+    dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
+  }
+#else // without ds3231
+  if (!now)) {
     time_t t = cvt_date(date, timestr);
     struct timeval tv;
     memset(&tv, 0, sizeof(tv));
@@ -72,14 +188,61 @@ extern void RTCInit(const char *date, const char *timestr)
     tz.tz_dsttime = 0;
     settimeofday(&tv, &tz);
   }
-  
+#endif
+
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   if (wakeup_reason)
     dprintf("Boot: %s (bootCount: %d)", ESP32WakeUpReason(wakeup_reason), ++bootCount);
   dprintf("Boot: CPU(Pro): %s", ESP32ResetReason(rtc_get_reset_reason(0)));
   dprintf("Boot: CPU(App): %s", ESP32ResetReason(rtc_get_reset_reason(1)));
   dprintf("ESP32: Revision: %d (%d MHz)", ESP.getChipRevision(), ESP.getCpuFreqMHz());
+
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED) { 
+    /*
+     * Run this only on reset boot, not from deepsleep.
+     */
+#ifdef EXT_POWER_SW
+    DigitalIn extPWR(EXT_POWER_SW);
+    extPWR.mode(PullUp); // turn off the power, PullUp will keep it off in deepsleep
+#endif
+#ifdef BAT_POWER_ADC
+    GetBatteryVoltage(); 
+#endif
+
+#ifdef FEATURE_SI7021
+  sensorSI7021 = new Adafruit_Si7021();
+  if (sensorSI7021->begin()) {
+      hasSensor = true;
+      dprintf("%s: Rev(%d)  %.2f°C  Humidity: %.2f%%", sensorSI7021->model, sensorSI7021->revision, sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
+  } else {
+    delete sensorSI7021;
+    sensorSI7021 = NULL;
+  }
+#endif
+  } else {
+    /* 
+     *  runs on deepsleep wakeup
+     */
+ #ifdef FEATURE_SI7021
+    if (hasSensor) {
+       sensorSI7021 = new Adafruit_Si7021();
+       dprintf("%s: %.2f°C  Humidity: %.2f%%", sensorSI7021->model, sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
+     }
+#endif
+  }
+ #if 0
+  DS3231_set_32kHz_output(true);
+  int aging = DS3231_get_aging();
+  dprintf("Aging: %d", aging);
+  delay(10000);
+  for (int i = 0; i > -40; i--) {
+    DS3231_set_aging(i);
+    dprintf("Test Aging=%d", DS3231_get_aging());
+    delay(10000);
+  }
+#endif
 }
+
 
 #else
 #error "Unkown platform"

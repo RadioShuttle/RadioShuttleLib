@@ -4,8 +4,8 @@
  * 30826 Garbsen (Hannover) Germany
  */
 #ifdef ARDUINO 
-#define RS_MAJOR    1
-#define RS_MINOR    8
+#define RS_MAJOR    2
+#define RS_MINOR    0
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
@@ -119,6 +119,8 @@
 #define LED           2               // red LED
 #define LED2          12              // green LED
 #define MYSERIAL      Serial          // the a regular serial IO1_TXD0/IO3_RXD0
+#define FEATURE_RTC_DS3231            // an I2C clock.
+#define FEATURE_SI7021                // Temperature & Humidity add-on sensor
 
 #define LORA_SPI_MOSI   MOSI          // MOSI 23 Arduino-Dev
 #define LORA_SPI_MISO   MISO          // MISO 19 Arduino-Dev
@@ -137,8 +139,10 @@
 #define RTC_INTR        SWO           // DS3231 RTC interrupt sharred with the switch
 
 #define EXT_POWER_SW    15            // Switch VDD on pin JP10
-#define EXT_POWER_ON    LOW
-#define EXT_POWER_OFF   HIGH
+#define EXT_POWER_ON    0
+#define EXT_POWER_OFF   1
+
+#define BAT_POWER_ADC   35            // uses a 1.0
 
 #else
 
