@@ -44,13 +44,17 @@ enum SensorsIDs { // Must be unique world wide.
   myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
   remoteDeviceID = 9,
 #else
-  // myDeviceID = 130,
-  myDeviceID = 14,
+  //myDeviceID = 130,
+  //myDeviceID = 131,
+  myDeviceID = 132,
+  //myDeviceID = 14,
   // myCode = 0x20EE91DE, // Atmel Board
   // myCode = 0x112B92ED, // Board r6.3 green pcb, red tactile
   // myCode = 0x194F6298, // Board r6.3 green pcb, black tactile
-  myCode = 0x21C3B11C,    // Board r7.2, blue ID 14
-  // myCode = 0xCEBB8927,    // Boardd r1, ID 130
+  //myCode = 0x21C3B11C,    // Board r7.2, blue ID 14
+  //myCode = 0xCEBB8927,    // Board r1, ID 130
+  //myCode = 0xaa57a528,    // Board r1, ID 131
+  myCode = 0x6b17e529,    // Board r1, ID 132
   // myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
   // myCode = 0xdf5c253a,    // 2nd Heltec ESP32 868 MHz board
   // myCode = 0x69ceedc0,  // Heltec ESP32 433 MHz board 9
