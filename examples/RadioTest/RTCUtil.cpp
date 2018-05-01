@@ -79,18 +79,19 @@ float GetBatteryVoltage()
 #endif
 
   float volt;
+  float vref = 1.1016; // 0.8862 V
 
   wait_ms(1);
-  analogSetPinAttenuation(BAT_POWER_ADC, ADC_0db); //  1.1248 Volt
+  analogSetPinAttenuation(BAT_POWER_ADC, ADC_0db); //  1.124 Volt ID 132, 
   wait_ms(20);  
   
   int value = 0;
   for (int i = 0; i < 12; i++) {
-    value += analogRead(BAT_POWER_ADC);
+    value += analogRead(BAT_POWER_ADC); // BAT_POWER_ADC is ADC1
   }
   value /= 12;
-  float voltstep = 1.1248/(float)(1<<12); // 12 bit 4096
-  volt = (float) ((value * voltstep) / 100) * 320; // 100k, 220k
+  float voltstep = vref/(float)(1<<12); // 12 bit 4096
+  volt = (float) ((value * voltstep) / 82) * (82+220); // 82k, 82k+220k
   dprintf("Power: %.2fV (ADC: %d)", volt, value); 
 
 #ifdef EXT_POWER_SW
@@ -230,7 +231,9 @@ void RTCInit(const char *date, const char *timestr)
      }
 #endif
   }
- #if 0
+#if 0 // RTC againg calibration
+  DigitalOut extPWR(EXT_POWER_SW);
+  extPWR = EXT_POWER_ON;
   DS3231_set_32kHz_output(true);
   int aging = DS3231_get_aging();
   dprintf("Aging: %d", aging);
@@ -240,6 +243,7 @@ void RTCInit(const char *date, const char *timestr)
     dprintf("Test Aging=%d", DS3231_get_aging());
     delay(10000);
   }
+  extPWR = EXT_POWER_OFF; 
 #endif
 }
 
