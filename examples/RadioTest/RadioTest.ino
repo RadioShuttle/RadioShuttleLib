@@ -46,7 +46,9 @@ enum SensorsIDs { // Must be unique world wide.
 #else
   //myDeviceID = 130,
   //myDeviceID = 131,
-  myDeviceID = 132,
+  //myDeviceID = 132,
+  myDeviceID = 201,
+  
   //myDeviceID = 14,
   // myCode = 0x20EE91DE, // Atmel Board
   // myCode = 0x112B92ED, // Board r6.3 green pcb, red tactile
@@ -54,7 +56,8 @@ enum SensorsIDs { // Must be unique world wide.
   //myCode = 0x21C3B11C,    // Board r7.2, blue ID 14
   //myCode = 0xCEBB8927,    // Board r1, ID 130
   //myCode = 0xaa57a528,    // Board r1, ID 131
-  myCode = 0x6b17e529,    // Board r1, ID 132
+  // myCode = 0x6b17e529,    // Board r1, ID 132
+  myCode = 0x5A9BA338,    // Board r1, ID 201
   // myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
   // myCode = 0xdf5c253a,    // 2nd Heltec ESP32 868 MHz board
   // myCode = 0x69ceedc0,  // Heltec ESP32 433 MHz board 9
@@ -142,6 +145,11 @@ InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
 void SwitchInput(void) {
+#ifdef ESP32_ECO_POWER  // our ESP32 design has a hardware debounce
+    dprintf("SwitchInput");
+    led = !led;
+    pressedCount++;
+#else
   static uint32_t lastInterrupt = 0;
   uint32_t ticks_ms = ms_getTicker();
   if (!lastInterrupt || ticks_ms > (lastInterrupt + 300)) { // debounce 300ms.
@@ -150,6 +158,7 @@ void SwitchInput(void) {
     pressedCount++;
     lastInterrupt = ticks_ms;
   }
+#endif
 }
 
 
@@ -266,9 +275,38 @@ void setup() {
 
   dprintf("Welcome to RadioShuttle v%d.%d", RS_MAJOR, RS_MINOR);
 
+#if 0
+  NVProperty p;
+
+  dprintf("NVProperty Version: %d", p.GetVersion());
+  dprintf("ADC_VREF: %d", p.GetProperty(p.ADC_VREF, 0));
+  dprintf("RTC_AGING_CAL: %x", p.GetProperty(p.RTC_AGING_CAL, 0));
+  dprintf("LORA_DEVICE_ID: %d", p.GetProperty(p.LORA_DEVICE_ID, 0));
+  p.SetProperty(11, p.T_32BIT, 0x1234, p.S_RAM);
+  dprintf("p.GetProperty Key=%d: %x", 11, p.GetProperty(11, 0));
+  p.EraseProperty(11, p.S_RAM);
+  dprintf("p.GetProperty Key=%d: %x", 11, p.GetProperty(11, 0));
+
+  dprintf("p.GetProperty Key=%d: 0x%x", 22, p.GetProperty(22, 0));
+  //p.OpenPropertyStore(true); // enable for write
+  //p.SetProperty(22, p.T_32BIT, 0x5678, p.S_FLASH);
+  //dprintf("p.GetProperty Key=%d: 0x%x", 22, p.GetProperty(22, 0));
+  //p.EraseProperty(22);
+  //dprintf("p.GetProperty Key=%d: 0x%x", 22, p.GetProperty(22, 0));
+
+  dprintf("p.GetProperty Key=%d: %s", 33, p.GetProperty(33, "Not found"));
+  p.SetProperty(33, p.T_STR, "Hello World!", p.S_RAM);
+  dprintf("p.GetProperty Key=%d: %s", 33, p.GetProperty(33, "Not found"));
+
+  dprintf("p.GetProperty Key=%d: %s", 44, p.GetProperty(44, "Not found"));
+  p.OpenPropertyStore(true); // enable for write
+  p.SetProperty(44, p.T_STR, "Hello World!", p.S_FLASH);
+  dprintf("p.GetProperty Key=%d: %s", 44, p.GetProperty(44, "Not found"));
+#endif
+
   if (InitRadio() != 0)
     return;
-    
+
 }
 
 
