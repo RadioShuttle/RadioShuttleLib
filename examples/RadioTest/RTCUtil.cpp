@@ -77,9 +77,9 @@ float GetBatteryVoltage()
   DigitalOut extPWR(EXT_POWER_SW);
   extPWR = EXT_POWER_ON;
 #endif
-  NVProperty p;
+  extern NVProperty prop;
   float volt;
-  float vref = (float)p.GetProperty(p.ADC_VREF, 1100)/1000.0;
+  float vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
   
   wait_ms(1);
   analogSetPinAttenuation(BAT_POWER_ADC, ADC_0db); //  1.124 Volt ID 132, 
@@ -151,8 +151,8 @@ void RTCInit(const char *date, const char *timestr)
     settimeofday(&tv, &tz);    
     dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
   }
-  NVProperty p;
-  int i = p.GetProperty(p.RTC_AGING_CAL, 0);
+  extern NVProperty prop;
+  int i = prop.GetProperty(prop.RTC_AGING_CAL, 0);
   if (i && i != DS3231_get_aging())
     DS3231_set_aging(i);
 #else // without ds3231
