@@ -24,47 +24,16 @@ extern void RTCInit(const char *date, const char *time);
     } \
   }
 
-// #define RADIO_SERVER  1  // enable of Station device, comment out of Node device
 
-#ifdef RADIO_SERVER
-bool server = true;
-#else
-bool server = false;
-#endif
+bool server = false;          // enable of Station device, set it to true for server mode
 bool usePassword = false;     // password the can used indepenend of AES
 bool useAES = false;          // AES needs the usePassword option on
 bool useNodeOffline = false;  // when idle turns the radio off and enters deelsleep
 
-enum SensorsIDs { // Must be unique world wide.
-  myTempSensorApp = 0x0001,
-#ifdef RADIO_SERVER
-  myDeviceID = 1,
-  // myCode = 0x20EE91D6,    // Atmel Board DevID 1
-  // myCode = 0xa12853b7,       // Heltec ESP32 433 MHz board 1
-  myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
-  remoteDeviceID = 9,
-#else
-  //myDeviceID = 130,
-  //myDeviceID = 131,
-  //myDeviceID = 132,
-  myDeviceID = 201,
-  
-  //myDeviceID = 14,
-  // myCode = 0x20EE91DE, // Atmel Board
-  // myCode = 0x112B92ED, // Board r6.3 green pcb, red tactile
-  // myCode = 0x194F6298, // Board r6.3 green pcb, black tactile
-  //myCode = 0x21C3B11C,    // Board r7.2, blue ID 14
-  //myCode = 0xCEBB8927,    // Board r1, ID 130
-  //myCode = 0xaa57a528,    // Board r1, ID 131
-  // myCode = 0x6b17e529,    // Board r1, ID 132
-  myCode = 0x5A9BA338,    // Board r1, ID 201
-  // myCode = 0x7a3cf3c,    // Heltec ESP32 868 MHz board
-  // myCode = 0xdf5c253a,    // 2nd Heltec ESP32 868 MHz board
-  // myCode = 0x69ceedc0,  // Heltec ESP32 433 MHz board 9
-  remoteDeviceID = 1,
-#endif
-};
-
+#define myTempSensorApp 0x0001 // Must be unique world wide.
+int myDeviceID;
+int myCode;
+int remoteDeviceID;
 unsigned char samplePassword[] = { "RadioShuttleFly" };
 
 /*
@@ -141,15 +110,11 @@ DigitalOut boost33(BOOSTER_EN33);
 #ifdef DISPLAY_EN
 DigitalOut displayEnable(DISPLAY_EN);
 #endif
+NVProperty prop;                      // global property store supports OTP, Flash and SRAM
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
 void SwitchInput(void) {
-#ifdef ESP32_ECO_POWER  // our ESP32 design has a hardware debounce
-    dprintf("SwitchInput");
-    led = !led;
-    pressedCount++;
-#else
   static uint32_t lastInterrupt = 0;
   uint32_t ticks_ms = ms_getTicker();
   if (!lastInterrupt || ticks_ms > (lastInterrupt + 300)) { // debounce 300ms.
@@ -158,9 +123,7 @@ void SwitchInput(void) {
     pressedCount++;
     lastInterrupt = ticks_ms;
   }
-#endif
 }
-
 
 
 Radio *radio;                         // the LoRa network interface
@@ -249,7 +212,7 @@ void DeInitRadio()
 
 void setup() {
   intr.mode(PullUp);
-  MYSERIAL.begin(230400/2);
+  MYSERIAL.begin(115200);
   InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
   SPI.begin();
   RTCInit(__DATE__, __TIME__);
@@ -274,34 +237,29 @@ void setup() {
   }
 
   dprintf("Welcome to RadioShuttle v%d.%d", RS_MAJOR, RS_MINOR);
+  
+#ifdef ESP32_ECO_POWER // uses included config in board
+  myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
+  myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
+#else // LongRa, etc.  uses manual config
+  myDeviceID = 14;
+  myCode = 0x21C3B11C;
+#endif
+  /*
+   * for a demo we ship a pair of boards with odd/even numbers, e.g. IDs 13/14
+   * 13 for a server, 14 for a node
+   */
+   remoteDeviceID = 1; // usually this is the server board
 
-#if 0
-  NVProperty p;
-
-  dprintf("NVProperty Version: %d", p.GetVersion());
-  dprintf("ADC_VREF: %d", p.GetProperty(p.ADC_VREF, 0));
-  dprintf("RTC_AGING_CAL: %x", p.GetProperty(p.RTC_AGING_CAL, 0));
-  dprintf("LORA_DEVICE_ID: %d", p.GetProperty(p.LORA_DEVICE_ID, 0));
-  p.SetProperty(11, p.T_32BIT, 0x1234, p.S_RAM);
-  dprintf("p.GetProperty Key=%d: %x", 11, p.GetProperty(11, 0));
-  p.EraseProperty(11, p.S_RAM);
-  dprintf("p.GetProperty Key=%d: %x", 11, p.GetProperty(11, 0));
-
-  dprintf("p.GetProperty Key=%d: 0x%x", 22, p.GetProperty(22, 0));
-  //p.OpenPropertyStore(true); // enable for write
-  //p.SetProperty(22, p.T_32BIT, 0x5678, p.S_FLASH);
-  //dprintf("p.GetProperty Key=%d: 0x%x", 22, p.GetProperty(22, 0));
-  //p.EraseProperty(22);
-  //dprintf("p.GetProperty Key=%d: 0x%x", 22, p.GetProperty(22, 0));
-
-  dprintf("p.GetProperty Key=%d: %s", 33, p.GetProperty(33, "Not found"));
-  p.SetProperty(33, p.T_STR, "Hello World!", p.S_RAM);
-  dprintf("p.GetProperty Key=%d: %s", 33, p.GetProperty(33, "Not found"));
-
-  dprintf("p.GetProperty Key=%d: %s", 44, p.GetProperty(44, "Not found"));
-  p.OpenPropertyStore(true); // enable for write
-  p.SetProperty(44, p.T_STR, "Hello World!", p.S_FLASH);
-  dprintf("p.GetProperty Key=%d: %s", 44, p.GetProperty(44, "Not found"));
+#define USE_DEMOBOARD_PAIR
+#ifdef USE_DEMOBOARD_PAIR
+  if (myDeviceID & 0x01) { // odd demo board IDs are servers
+    server = true;
+    remoteDeviceID = myDeviceID + 1;
+  } else {
+    server = false;
+    remoteDeviceID = myDeviceID - 1;
+  }
 #endif
 
   if (InitRadio() != 0)
@@ -334,7 +292,7 @@ void loop() {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
      * On the D21 we receive a RTC wakeup every 5 seconds to allow to work
-     * On the ESP32 an RTC a light sleep suspends work for a second.
+     * On the ESP32 an RTC a deep sleep restarts every 10 secs
      */
     deepsleep();
   } else {
