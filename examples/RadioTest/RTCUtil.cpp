@@ -77,10 +77,10 @@ float GetBatteryVoltage()
   DigitalOut extPWR(EXT_POWER_SW);
   extPWR = EXT_POWER_ON;
 #endif
-
+  NVProperty p;
   float volt;
-  float vref = 1.1016; // 0.8862 V
-
+  float vref = (float)p.GetProperty(p.ADC_VREF, 1100)/1000.0;
+  
   wait_ms(1);
   analogSetPinAttenuation(BAT_POWER_ADC, ADC_0db); //  1.124 Volt ID 132, 
   wait_ms(20);  
@@ -92,7 +92,8 @@ float GetBatteryVoltage()
   value /= 12;
   float voltstep = vref/(float)(1<<12); // 12 bit 4096
   volt = (float) ((value * voltstep) / 82) * (82+220); // 82k, 82k+220k
-  dprintf("Power: %.2fV (ADC: %d)", volt, value); 
+  volt -= 0.065; // correction in millivolt
+  dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, value, vref); 
 
 #ifdef EXT_POWER_SW
   extPWR = EXT_POWER_OFF; 
@@ -101,33 +102,6 @@ float GetBatteryVoltage()
 #endif
   return volt;
 }
-
-#if 0
-float GetBatteryVoltageIDF()
-{
-  float volt;
-  DigitalOut extPWR(EXT_POWER_SW);
-  extPWR = EXT_POWER_ON;
-  wait_ms(1);
-  //adc_power_on();
-  adc1_config_width(ADC_WIDTH_12Bit);
-  adc1_config_channel_atten(ADC1_CHANNEL_7, ADC_ATTEN_0db);  //  1.1248 Volt
-  wait_ms(20);  
-  
-  int value = 0;
-  for (int i = 0; i < 12; i++) {
-    value = adc1_get_raw(ADC1_CHANNEL_7); 
-  }
-  value /= 12;
-  float voltstep = 1.1248/(float)(1<<12); // 12 bit 4096
-  volt = (float) ((value * voltstep) / 100) * 320; // 100k, 220k
-  dprintf("Power: %.2fV (ADC: %d)", volt, value); 
-  extPWR = EXT_POWER_OFF; 
-
-  // adc_power_off();
-  return 0;
-}
-#endif // IDF
 
 #endif
 
@@ -177,6 +151,10 @@ void RTCInit(const char *date, const char *timestr)
     settimeofday(&tv, &tz);    
     dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
   }
+  NVProperty p;
+  int i = p.GetProperty(p.RTC_AGING_CAL, 0);
+  if (i && i != DS3231_get_aging())
+    DS3231_set_aging(i);
 #else // without ds3231
   if (!now)) {
     time_t t = cvt_date(date, timestr);
@@ -231,17 +209,42 @@ void RTCInit(const char *date, const char *timestr)
      }
 #endif
   }
-#if 0 // RTC againg calibration
+#if 0// RTC againg calibration
   DigitalOut extPWR(EXT_POWER_SW);
   extPWR = EXT_POWER_ON;
   DS3231_set_32kHz_output(true);
-  int aging = DS3231_get_aging();
+  int8_t aging = DS3231_get_aging();
   dprintf("Aging: %d", aging);
-  delay(10000);
-  for (int i = 0; i > -40; i--) {
-    DS3231_set_aging(i);
-    dprintf("Test Aging=%d", DS3231_get_aging());
-    delay(10000);
+  dprintf("RTC againg calibration cmds are: +, -, 0, f (10 forward), b (10 backward), q (quit)");
+  bool done = false;
+  while(!done) {
+    if (MYSERIAL.available() > 0) {
+      int c = Serial.read();
+      switch(c) {
+        case '+':
+          aging++;
+          break;
+        case '-':
+          aging--;
+          break;  
+        case '0':
+          aging = 0;
+          break;
+        case 'f':
+          aging += 10;
+          break;
+        case 'b':
+          aging -= 10;
+          break;
+        case 'q':
+          done = true;
+          break;
+        default: 
+          continue;
+      }
+      DS3231_set_aging(aging);
+      dprintf("Test Aging=%d", DS3231_get_aging());
+    }
   }
   extPWR = EXT_POWER_OFF; 
 #endif
