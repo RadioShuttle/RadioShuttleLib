@@ -24,6 +24,7 @@ extern void RTCInit(const char *date, const char *time);
     } \
   }
 
+#define RADIO_SERVER          // deactivate this for the node.
 
 bool server = false;          // enable of Station device, set it to true for server mode
 bool usePassword = false;     // password the can used indepenend of AES
@@ -242,15 +243,27 @@ void setup() {
   myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
   myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
 #else // LongRa, etc.  uses manual config
-  myDeviceID = 14;
-  myCode = 0x21C3B11C;
+  #ifdef RADIO_SERVER
+    myDeviceID = 13;
+    myCode = 0x21C4B11C;
+  #else // node
+    myDeviceID = 14;
+    myCode = 0x21C3718C;
+  #endif
 #endif
-  /*
-   * for a demo we ship a pair of boards with odd/even numbers, e.g. IDs 13/14
-   * 13 for a server, 14 for a node
-   */
-   remoteDeviceID = 1; // usually this is the server board
 
+#ifdef RADIO_SERVER
+  remoteDeviceID = 1; // usually this is the board ID other board
+  server = true;
+#else // client
+  remoteDeviceID = 1; // usually this is the board ID other board
+  server = false;
+#endif
+ 
+/*
+ * for a demo we ship a pair of boards with odd/even numbers, e.g. IDs 13/14
+ * 13 for a server, 14 for a node
+ */
 #define USE_DEMOBOARD_PAIR
 #ifdef USE_DEMOBOARD_PAIR
   if (myDeviceID & 0x01) { // odd demo board IDs are servers
