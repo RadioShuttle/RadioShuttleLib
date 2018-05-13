@@ -242,7 +242,7 @@ void setup() {
 #ifdef ESP32_ECO_POWER // uses included config in board
   myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
   myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
-#else // LongRa, etc.  uses manual config
+#else // LongRa, etc. uses manual config
   #ifdef RADIO_SERVER
     myDeviceID = 13;
     myCode = 0x21C4B11C;
@@ -253,10 +253,10 @@ void setup() {
 #endif
 
 #ifdef RADIO_SERVER
-  remoteDeviceID = 1; // usually this is the board ID other board
+  remoteDeviceID = 1; // usually this is the board ID of the other board
   server = true;
 #else // client
-  remoteDeviceID = 1; // usually this is the board ID other board
+  remoteDeviceID = 1; // usually this is the board ID of the other board
   server = false;
 #endif
  
@@ -277,7 +277,6 @@ void setup() {
 
   if (InitRadio() != 0)
     return;
-
 }
 
 
