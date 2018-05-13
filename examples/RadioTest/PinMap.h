@@ -115,9 +115,9 @@
 #define ESP32_ECO_POWER   
 #define FEATURE_LORA  1
 
-#define SW0           0               // no pullup
-#define LED           2               // red LED
-#define LED2          12              // green LED
+#define SW0           0               // uses hardware pullup
+#define LED           2               // green LED
+#define LED2          12              // red LED
 #define MYSERIAL      Serial          // the a regular serial IO1_TXD0/IO3_RXD0
 #define FEATURE_RTC_DS3231            // an I2C clock.
 #define FEATURE_SI7021                // Temperature & Humidity add-on sensor
