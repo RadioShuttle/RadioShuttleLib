@@ -15,7 +15,6 @@
 
 #ifdef FEATURE_LORA
 
-extern void RTCInit(const char *date, const char *time);
 
 #define CHECK_ERROR_RET(func, err) { \
     if (err) { \
@@ -102,15 +101,7 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
 
 
 DigitalOut led(LED);
-#ifdef BOOSTER_EN50
-DigitalOut boost50(BOOSTER_EN50);
-#endif
-#ifdef BOOSTER_EN33
-DigitalOut boost33(BOOSTER_EN33);
-#endif
-#ifdef DISPLAY_EN
-DigitalOut displayEnable(DISPLAY_EN);
-#endif
+
 NVProperty prop;                      // global property store supports OTP, Flash and SRAM
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
@@ -218,14 +209,6 @@ void setup() {
   SPI.begin();
   RTCInit(__DATE__, __TIME__);
 
-#ifdef BOOSTER_EN50
-  boost50 = 0;
-  boost33 = 0;
-#endif
-#ifdef DISPLAY_EN
-  displayEnable = 1; // disconnects the display from the 3.3 power
-#endif
-
   led = 1;
   if (!SerialUSB_active && useNodeOffline) {
 #ifdef ARDUINO_SAMD_ZERO
@@ -235,6 +218,17 @@ void setup() {
 #endif
   } else {
    intr.fall(callback(&SwitchInput));
+  }
+
+  if (ESP32DeepsleepWakeup) {
+    /*
+     * We received a wakeup after an ESP32 deepsleep timeout or IO activity 
+     * on registered pins. Here we can add some checking code and quickly enter
+     * into deepsleep() again, when appropriate (nothing to do).
+     * Omitting the additional startup code and messages will save energy 
+     */
+    // Your code goes here:
+    // deepsleep();
   }
 
   dprintf("Welcome to RadioShuttle v%d.%d", RS_MAJOR, RS_MINOR);
@@ -248,7 +242,7 @@ void setup() {
     myCode = 0x21C4B11C;
   #else // node
     myDeviceID = 14;
-    myCode = 0x21C3718C;
+    myCode = 0x21C3B11C;
   #endif
 #endif
 
