@@ -14,7 +14,7 @@
 #elif ARDUINO_ARCH_ESP32
 #include <rom/rtc.h>
 #include <driver/adc.h>
-#if defined (FEATURE_SI7021) || defined (FEATURE_SI7021)
+#if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
  #include <Wire.h>
 #endif
 #ifdef FEATURE_RTC_DS3231
@@ -28,9 +28,20 @@
 
 #ifdef FEATURE_LORA
 
-
+bool ESP32DeepsleepWakeup;
 
 #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)
+
+#ifdef BOOSTER_EN50
+DigitalOut boost50(BOOSTER_EN50);
+#endif
+#ifdef BOOSTER_EN33
+DigitalOut boost33(BOOSTER_EN33);
+#endif
+#ifdef DISPLAY_EN
+DigitalOut displayEnable(DISPLAY_EN);
+#endif
+
 RTCZero rtc;
 
 void alarmMatch()
@@ -61,6 +72,13 @@ void RTCInit(const char *date, const char *timestr)
       PM->RCAUSE.reg & PM_RCAUSE_WDT ? "WatchDog" : "",
       PM->RCAUSE.reg & PM_RCAUSE_BOD33 ? "Brown-Out" : "");
   }
+#ifdef BOOSTER_EN50
+  boost50 = 0;
+  boost33 = 0;
+#endif
+#ifdef DISPLAY_EN
+  displayEnable = 1; // disconnects the display from the 3.3 power
+#endif
   InitWatchDog();
 }
 
@@ -77,7 +95,6 @@ float GetBatteryVoltage()
   DigitalOut extPWR(EXT_POWER_SW);
   extPWR = EXT_POWER_ON;
 #endif
-  extern NVProperty prop;
   float volt;
   float vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
   
@@ -111,7 +128,7 @@ RTC_DATA_ATTR bool hasSensor;
 
 void RTCInit(const char *date, const char *timestr)
 {
-#if defined (FEATURE_SI7021) || defined (FEATURE_SI7021)
+#if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
   Wire.begin();
 #endif
 
@@ -151,7 +168,6 @@ void RTCInit(const char *date, const char *timestr)
     settimeofday(&tv, &tz);    
     dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
   }
-  extern NVProperty prop;
   int i = prop.GetProperty(prop.RTC_AGING_CAL, 0);
   if (i && i != DS3231_get_aging())
     DS3231_set_aging(i);
@@ -202,6 +218,7 @@ void RTCInit(const char *date, const char *timestr)
     /* 
      *  runs on deepsleep wakeup
      */
+     ESP32DeepsleepWakeup = true;
  #ifdef FEATURE_SI7021
     if (hasSensor) {
        sensorSI7021 = new Adafruit_Si7021();
@@ -209,45 +226,6 @@ void RTCInit(const char *date, const char *timestr)
      }
 #endif
   }
-#if 0// RTC againg calibration
-  DigitalOut extPWR(EXT_POWER_SW);
-  extPWR = EXT_POWER_ON;
-  DS3231_set_32kHz_output(true);
-  int8_t aging = DS3231_get_aging();
-  dprintf("Aging: %d", aging);
-  dprintf("RTC againg calibration cmds are: +, -, 0, f (10 forward), b (10 backward), q (quit)");
-  bool done = false;
-  while(!done) {
-    if (MYSERIAL.available() > 0) {
-      int c = Serial.read();
-      switch(c) {
-        case '+':
-          aging++;
-          break;
-        case '-':
-          aging--;
-          break;  
-        case '0':
-          aging = 0;
-          break;
-        case 'f':
-          aging += 10;
-          break;
-        case 'b':
-          aging -= 10;
-          break;
-        case 'q':
-          done = true;
-          break;
-        default: 
-          continue;
-      }
-      DS3231_set_aging(aging);
-      dprintf("Test Aging=%d", DS3231_get_aging());
-    }
-  }
-  extPWR = EXT_POWER_OFF; 
-#endif
 }
 
 
