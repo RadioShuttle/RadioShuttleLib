@@ -102,7 +102,6 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
 
 DigitalOut led(LED);
 
-NVProperty prop;                      // global property store supports OTP, Flash and SRAM
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
