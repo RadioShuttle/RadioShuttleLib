@@ -24,9 +24,30 @@
   #include "Adafruit_Si7021.h"
 #endif
 #endif
-
+#if LORA_CS != NC
+#include <sx1276-mbed-hal.h>
+#endif
 
 #ifdef FEATURE_LORA
+
+NVProperty prop; // global property store supports OTP, Flash and SRAM
+
+void InitLoRaChipWithShutdown()
+{
+#ifdef LORA_CS
+    if (LORA_CS == NC)
+      return;
+    Radio *radio = new SX1276Generic(NULL, RFM95_SX1276,
+                            LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+                            LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
+    RadioEvents_t radioEvents;
+    memset(&radioEvents, 0, sizeof(radioEvents));
+    if (radio->Init(&radioEvents)) {
+        radio->Sleep();
+        delete radio;
+    }
+#endif
+}
 
 bool ESP32DeepsleepWakeup;
 
@@ -227,7 +248,6 @@ void RTCInit(const char *date, const char *timestr)
 #endif
   }
 }
-
 
 #else
 #error "Unkown platform"
