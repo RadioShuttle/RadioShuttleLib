@@ -211,7 +211,8 @@ void RTCInit(const char *date, const char *timestr)
     dprintf("Boot: %s (bootCount: %d)", ESP32WakeUpReason(wakeup_reason), ++bootCount);
   dprintf("Boot: CPU(Pro): %s", ESP32ResetReason(rtc_get_reset_reason(0)));
   dprintf("Boot: CPU(App): %s", ESP32ResetReason(rtc_get_reset_reason(1)));
-  dprintf("ESP32: Revision: %d (%d MHz)", ESP.getChipRevision(), ESP.getCpuFreqMHz());
+  dprintf("ESP32: Revision: %d (%d MHz)", ESP.getChipRevision(), ESP32Frequency()/1000000);
+
 
   if (wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED) { 
     /*
