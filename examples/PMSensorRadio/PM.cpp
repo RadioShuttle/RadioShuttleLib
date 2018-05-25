@@ -14,6 +14,9 @@
 
 #include "PM.h"
 
+#ifdef BOOSTER_EN50
+extern DigitalOut boost50;
+#endif
 
 bool
 PMSensor::SensorInit(SERIALTYPE *serial, int baud)
@@ -26,13 +29,17 @@ PMSensor::SensorInit(SERIALTYPE *serial, int baud)
 void
 PMSensor::EnablePower(void)
 {
-  
+#ifdef BOOSTER_EN50
+  boost50 = 1;
+#endif  
 }
 
 void
 PMSensor::DisablePower(void)
 {
-  
+#ifdef BOOSTER_EN50
+  boost50 = 0;
+#endif  
 }
 
 

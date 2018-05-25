@@ -7,9 +7,11 @@
 #ifdef ARDUINO_ARCH_ESP32
 #define SERIALTYPE  HardwareSerial
 #define PMSerial    Serial
-#else
+#elif BOARD_REV_720
 #define SERIALTYPE  Uart
 #define PMSerial    Serial1
+#elif
+#error "Unkown Board"
 #endif
 
 class PMSensor {
