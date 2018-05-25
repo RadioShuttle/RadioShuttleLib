@@ -23,6 +23,19 @@ PMSensor::SensorInit(SERIALTYPE *serial, int baud)
   return true;
 }
 
+void
+PMSensor::EnablePower(void)
+{
+  
+}
+
+void
+PMSensor::DisablePower(void)
+{
+  
+}
+
+
 bool
 PMSensor::ReadRecord(void)
 {

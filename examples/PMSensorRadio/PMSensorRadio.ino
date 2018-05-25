@@ -17,7 +17,6 @@
 
 #ifdef FEATURE_LORA
 
-extern void RTCInit(const char *date, const char *time);
 
 #define CHECK_ERROR_RET(func, err) { \
     if (err) { \
@@ -26,30 +25,18 @@ extern void RTCInit(const char *date, const char *time);
     } \
   }
 
-// #define RADIO_SERVER  1
+#define RADIO_SERVER          // deactivate this for the node.
 
-#ifdef RADIO_SERVER
-bool server = true;
-#else
-bool server = false;
-#endif
-bool usePassword = false; // password the can used indepenend of AES
-bool useAES = false;      // AES needs the usePassword option on
+bool server = false;          // enable of Station device, set it to true for server mode
+bool usePassword = false;     // password the can used indepenend of AES
+bool useAES = false;          // AES needs the usePassword option on
 bool useNodeOffline = false;  // when idle turns the radio off and enters deelsleep
 
-enum SensorsIDs { // Must be unique world wide.
-  myPMSensorApp = 10,
-#ifdef RADIO_SERVER
-  myDeviceID = 1,
-  myCode = 0x20EE91D6
-  remoteDeviceID = 9,
-#else
-  myDeviceID = 9,
-  myCode = 0x112B92ED, //Board r6.3 green pcb, red tactile
-  remoteDeviceID = 1,
-#endif
-};
 
+#define myPMSensorApp 10 // Must be unique world wide.
+int myDeviceID;
+int myCode;
+int remoteDeviceID;
 unsigned char samplePassword[] = { "RadioShuttleFly" };
 
 /*
@@ -134,15 +121,7 @@ void PMSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID, 
 
 
 DigitalOut led(LED);
-#ifdef BOOSTER_EN50
-DigitalOut boost50(BOOSTER_EN50);
-#endif
-#ifdef BOOSTER_EN33
-DigitalOut boost33(BOOSTER_EN33);
-#endif
-#ifdef DISPLAY_EN
-DigitalOut displayEnable(DISPLAY_EN);
-#endif
+
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
@@ -167,7 +146,7 @@ Radio *radio;                         // the LoRa network interface
 RadioShuttle *rs;                     // the RadioShutlle protocol
 RadioStatusInterface *statusIntf;     // the optional status interface
 RadioSecurityInterface *securityIntf; // the optional security interface
-PMSensor pm;
+PMSensor pm;                          // the PMSensor class
 
 int InitRadio()
 {
@@ -254,14 +233,6 @@ void setup() {
   SPI.begin();
   RTCInit(__DATE__, __TIME__);
 
-#ifdef BOOSTER_EN50
-  boost50 = 0;
-  boost33 = 0;
-#endif
-#ifdef DISPLAY_EN
-  displayEnable = 1; // disconnects the display from the 3.3 power
-#endif
-
   led = 1;
   if (!SerialUSB_active && useNodeOffline) {
 #ifdef ARDUINO_SAMD_ZERO
@@ -275,13 +246,35 @@ void setup() {
     
   dprintf("Welcome to RadioShuttle - PMSensor v%d.%d", RS_MAJOR, RS_MINOR);
 
-  pm.SensorInit(&Serial1);        // Serial1 = D0(RX), D1(TX)
+#ifdef ESP32_ECO_POWER // uses included config in board
+  myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
+  myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
+#else // LongRa, etc. uses manual config
+  #ifdef RADIO_SERVER
+    myDeviceID = 13;
+    myCode = 0x21C4B11C;
+  #else // node
+    myDeviceID = 14;
+    myCode = 0x21C3B11C;
+  #endif
+#endif
+
+#ifdef RADIO_SERVER
+  remoteDeviceID = 1; // usually this is the board ID of the other board
+  server = true;
+#else // client
+  remoteDeviceID = 1; // usually this is the board ID of the other board
+  server = false;
+#endif
+
+  pm.SensorInit(&PMSerial);        // Serial1 = D0(RX), D1(TX)
   lastPMReadTime = s_getTicker();
 
 #if 0 // enable this to test the sensor
-  boost50 = 1;
+  pm.EnablePower();
   while (true)
     pm.ReadRecord();
+  pm.DisablePower();
 #endif
 
   if (InitRadio() != 0)
@@ -307,18 +300,15 @@ void loop() {
     if (server) {
       rs->SendMsg(myPMSensorApp, NULL, 0, flags, remoteDeviceID);
     } else {
-#ifdef BOOSTER_EN50
-      boost50 = 1;
-#endif
+      pm.EnablePower();
       uint32_t start = s_getTicker();
       bool gotData = false;
       while (s_getTicker() < (start + pm.getWarmUpSeconds())) {
         if (pm.ReadRecord())
           gotData = true;
       }
-#ifdef BOOSTER_EN50
-      boost50 = 0;
-#endif
+      pm.DisablePower();
+
       if (gotData) {
         memset(&PMAppData, 0, sizeof(PMAppData));
         PMAppData.version = 1;

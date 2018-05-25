@@ -6,13 +6,17 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 #define SERIALTYPE  HardwareSerial
+#define PMSerial    Serial
 #else
 #define SERIALTYPE  Uart
+#define PMSerial    Serial1
 #endif
 
 class PMSensor {
   public:
     bool SensorInit(SERIALTYPE *serial, int baud = 9600);
+    void EnablePower(void);
+    void DisablePower(void);
     bool ReadRecord(void);
     uint16_t getPM10(void);
     uint16_t getPM25(void);
