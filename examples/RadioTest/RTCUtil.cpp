@@ -130,7 +130,7 @@ float GetBatteryVoltage()
   value /= 12;
   float voltstep = vref/(float)(1<<12); // 12 bit 4096
   volt = (float) ((value * voltstep) / 82) * (82+220); // 82k, 82k+220k
-  volt -= 0.065; // correction in millivolt
+  volt -= 0.065; // correction in millivolts
   dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, value, vref); 
 
 #ifdef EXT_POWER_SW
