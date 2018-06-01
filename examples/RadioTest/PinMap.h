@@ -1,11 +1,11 @@
 /*
  * The file is Licensed under the Apache License, Version 2.0
- * (c) 2017 Helmut Tschemernjak
+ * (c) 2018 Helmut Tschemernjak
  * 30826 Garbsen (Hannover) Germany
  */
 #ifdef ARDUINO 
 #define RS_MAJOR    2
-#define RS_MINOR    2
+#define RS_MINOR    4
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
@@ -31,14 +31,14 @@
 #elif __SAMD21G18A__ // Zero
 #define FEATURE_LORA  1
 
-// #define BOARD_REV_200  1		// board with Lipo power supply/charger, mini USB
-// #define BOARD_REV_301  1		// board with Lipo power supply/charger, micro USB
-// #define BOARD_REV_630  1		// board with Lipo power supply/charger, micro USB
-#define BOARD_REV_720  1		// Maker Faire Hannover revision, micro USB
+// #define D21_LONGRA_REV_200  1		// board with Lipo power supply/charger, mini USB
+// #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
+// #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
+#define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
 
 
 
-#if defined(BOARD_REV_301) || defined(BOARD_REV_200)
+#if defined(D21_LONGRA_REV_301) || defined(D21_LONGRA_REV_200)
 
 #define SW0      		  1   // switch needs pullup.
 #define LED       		0
@@ -56,7 +56,7 @@
 #define LORA_DIO4       5             // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
-#elif defined (BOARD_REV_630) || defined (BOARD_REV_720)
+#elif defined (D21_LONGRA_REV_630) || defined (D21_LONGRA_REV_720)
 
 #define SW0       		12              // PA19 switch needs pullup
 #define LED       		LED_BUILTIN     // PA17
