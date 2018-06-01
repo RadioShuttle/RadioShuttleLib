@@ -40,6 +40,12 @@ MyRadioStatus::MyRadioStatus()
     ledTimeout = new DigitalOut(LED1); // green
     *ledTimeout = 0;
 #endif
+#ifdef HELTECL432_REV1
+    ledTX = new DigitalOut(STATUS_LED); // green
+    *ledTX = 0;
+    ledRX = new DigitalOut(LED2); // red
+    *ledRX = 0;
+#endif
 #ifdef MyHOME_BOARD_REV4
     ledTX = new DigitalOut(LED2); // yellow
     *ledTX = 0;
