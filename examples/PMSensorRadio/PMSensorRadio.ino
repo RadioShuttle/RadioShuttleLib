@@ -27,10 +27,10 @@
 
 #define RADIO_SERVER          // deactivate this for the node.
 
-bool server = false;          // enable of Station device, set it to true for server mode
-bool usePassword = false;     // password the can used indepenend of AES
+bool server = false;          // enabling of Station device, set it to true for server mode
+bool usePassword = false;     // password that can be used independently of AES
 bool useAES = false;          // AES needs the usePassword option on
-bool useNodeOffline = false;  // when idle turns the radio off and enters deelsleep
+bool useNodeOffline = false;  // when idle turns the radio off and enters deepsleep
 
 
 #define myPMSensorApp 10 // Must be unique world wide.
@@ -79,7 +79,7 @@ void PMSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID, 
     case RadioShuttle::MS_SentCompletedConfirmed:// A SendMsg has been sent and confirmed
       dprintf("MSG_SentCompletedConfirmed: id=%d %d bytes", msgID, length);
       break;
-    case RadioShuttle::MS_SentTimeout:    // A timeout occurred, number of retires exceeded
+    case RadioShuttle::MS_SentTimeout:    // A timeout occurred, number of retries exceeded
       dprintf("MSG_SentTimeout ID: %d", msgID);
       break;
     case RadioShuttle::MS_RecvData:     // a simple input message
@@ -143,7 +143,7 @@ void SwitchInput(void) {
 
 
 Radio *radio;                         // the LoRa network interface
-RadioShuttle *rs;                     // the RadioShutlle protocol
+RadioShuttle *rs;                     // the RadioShuttle protocol
 RadioStatusInterface *statusIntf;     // the optional status interface
 RadioSecurityInterface *securityIntf; // the optional security interface
 PMSensor pm;                          // the PMSensor class
@@ -236,7 +236,7 @@ void setup() {
   led = 1;
   if (!SerialUSB_active && useNodeOffline) {
 #ifdef ARDUINO_SAMD_ZERO
-    intr.low(callback(&SwitchInput)); // in D21 deepsleep supports only low/high.
+    intr.low(callback(&SwitchInput)); // in deepsleep, D21 supports only low/high.
 #else
     intr.fall(callback(&SwitchInput));
 #endif
@@ -295,7 +295,7 @@ void loop() {
     int flags = 0;
     // flags |= RadioShuttle::MF_NeedsConfirm; // optional
     if (usePassword && useAES)
-      flags |= RadioShuttle::MF_Encrypted; // optional not needed for PMSensor data
+      flags |= RadioShuttle::MF_Encrypted; // optional, not needed for PMSensor data
 
     if (server) {
       rs->SendMsg(myPMSensorApp, NULL, 0, flags, remoteDeviceID);
@@ -325,12 +325,12 @@ void loop() {
   if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
-     * On the D21 we receive a RTC wakeup every 5 seconds to allow to work
+     * On the D21, we receive a RTC wakeup every 5 seconds to allow working
      * On the ESP32 an RTC a light sleep suspends work for a second.
      */
     deepsleep();
   } else {
-    sleep();  // timer and radio interrupts will wakeup us
+    sleep();  // timer and radio interrupts will wake us up
   }
   led = 1;
   rs->RunShuttle(); // process all pending events
