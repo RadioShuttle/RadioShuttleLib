@@ -25,10 +25,10 @@
 
 #define RADIO_SERVER          // deactivate this for the node.
 
-bool server = false;          // enable of Station device, set it to true for server mode
-bool usePassword = false;     // password the can used indepenend of AES
+bool server = false;          // enabling of Station device, set it to true for server mode
+bool usePassword = false;     // password that can be used independently of AES
 bool useAES = false;          // AES needs the usePassword option on
-bool useNodeOffline = false;  // when idle turns the radio off and enters deelsleep
+bool useNodeOffline = false;  // when idle turns the radio off and enters deepsleep
 
 #define myTempSensorApp 0x0001 // Must be unique world wide.
 int myDeviceID;
@@ -68,7 +68,7 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
     case RadioShuttle::MS_SentCompletedConfirmed:// A SendMsg has been sent and confirmed
       dprintf("MSG_SentCompletedConfirmed: id=%d %d bytes", msgID, length);
       break;
-    case RadioShuttle::MS_SentTimeout:    // A timeout occurred, number of retires exceeded
+    case RadioShuttle::MS_SentTimeout:    // A timeout occurred, number of retries exceeded
       dprintf("MSG_SentTimeout ID: %d", msgID);
       break;
     case RadioShuttle::MS_RecvData:     // a simple input message
@@ -99,9 +99,21 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
   }
 }
 
-
+/*
+ * DigitalOut is a simple C++ wrapper around the GPIO ports (compatible with mbed.org).
+ * It is easy to use and easier to understand, it allows reading and setting the object.
+ * DigitalOut, DigitalIn and DigitalInOut are available.
+ */
 DigitalOut led(LED);
 
+/*
+ * InterruptIn allows input registration for a specific pin.
+ * intr.mode() "PullUp" or "PullDown" is supported.
+ * intr.fall, intr.rise, high, low allows registering an interrupt
+ * handler to be called upon a pin change event.
+ * A callback() wrapper is required to provide C or C++ handlers
+ * (compatible with mbed.org).
+ */
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
@@ -118,7 +130,7 @@ void SwitchInput(void) {
 
 
 Radio *radio;                         // the LoRa network interface
-RadioShuttle *rs;                     // the RadioShutlle protocol
+RadioShuttle *rs;                     // the RadioShuttle protocol
 RadioStatusInterface *statusIntf;     // the optional status interface
 RadioSecurityInterface *securityIntf; // the optional security interface
 
@@ -211,7 +223,7 @@ void setup() {
   led = 1;
   if (!SerialUSB_active && useNodeOffline) {
 #ifdef ARDUINO_SAMD_ZERO
-    intr.low(callback(&SwitchInput)); // in D21 deepsleep supports only low/high.
+    intr.low(callback(&SwitchInput)); // in deepsleep, D21 supports only low/high.
 #else
     intr.fall(callback(&SwitchInput));
 #endif
@@ -296,7 +308,7 @@ void loop() {
   if (!SerialUSB_active && rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
     /*
      * In deepsleep() the CPU is turned off, lowest power mode.
-     * On the D21 we receive a RTC wakeup every 5 seconds to allow to work
+     * On the D21, we receive a RTC wakeup every 5 seconds to allow working
      * On the ESP32 an RTC a deep sleep restarts every 10 secs
      */
     deepsleep();
