@@ -42,7 +42,7 @@ enum SensorsIDs { // Must be unique world wide.
     myDeviceID = 1,
     myCode = 0,
     remoteDeviceID = 14,
-    //remoteDeviceID = 130,
+    //remoteDeviceID = 132,
 #else
     myDeviceID = 14,
     myCode = 0,
@@ -92,7 +92,7 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
         case RadioShuttle::MS_SentCompletedConfirmed:// A SendMsg has been sent and confirmed
             dprintf("MSG_SentCompletedConfirmed: id=%d %d bytes", msgID, length);
             break;
-        case RadioShuttle::MS_SentTimeout:		// A timeout occurred, number of retires exceeded
+        case RadioShuttle::MS_SentTimeout:		// A timeout occurred, number of retries exceeded
             dprintf("MSG_SentTimeout ID: %d", msgID);
             break;
 
@@ -148,7 +148,11 @@ int InitRadio()
                               LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
                               LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
                               LORA_ANT_RX, LORA_ANT_TX, LORA_ANT_BOOST, LORA_TCXO);
-    
+#elif defined(HELTECL432_REV1)
+    radio = new SX1276Generic(NULL, HELTEC_L4_1276,
+                              LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+                              LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
+                              LORA_ANT_PWR);
 #else // RFM95
     radio = new SX1276Generic(NULL, RFM95_SX1276,
                               LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
