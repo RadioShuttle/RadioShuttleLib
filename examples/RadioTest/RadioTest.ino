@@ -23,7 +23,7 @@
     } \
   }
 
-#define RADIO_SERVER          // deactivate this for the node.
+// #define RADIO_SERVER          // deactivate this for the node.
 
 bool server = false;          // enabling of Station device, set it to true for server mode
 bool usePassword = false;     // password that can be used independently of AES
@@ -118,14 +118,9 @@ InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
 void SwitchInput(void) {
-  static uint32_t lastInterrupt = 0;
-  uint32_t ticks_ms = ms_getTicker();
-  if (!lastInterrupt || ticks_ms > (lastInterrupt + 300)) { // debounce 300ms.
-    dprintf("SwitchInput");
-    led = !led;
-    pressedCount++;
-    lastInterrupt = ticks_ms;
-  }
+  dprintf("SwitchInput");
+  led = !led;
+  pressedCount++;
 }
 
 
@@ -215,6 +210,7 @@ void DeInitRadio()
 
 void setup() {
   intr.mode(PullUp);
+  intr.debounce();
   MYSERIAL.begin(115200);
   InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
   SPI.begin();

@@ -130,14 +130,9 @@ const int PM_READ_INTERVAL = 60; // 60*30 secs, ususally it can be every 30 minu
 
 
 void SwitchInput(void) {
-  static uint32_t lastInterrupt = 0;
-  uint32_t ticks_ms = ms_getTicker();
-  if (!lastInterrupt || ticks_ms > (lastInterrupt + 300)) { // debounce 300ms.
-    dprintf("SwitchInput");
-    led = !led;
-    pressedCount++;
-    lastInterrupt = ticks_ms;
-  }
+  dprintf("SwitchInput");
+  led = !led;
+  pressedCount++;
 }
 
 
@@ -228,6 +223,7 @@ void DeInitRadio()
 
 void setup() {
   intr.mode(PullUp);
+  intr.debounce();
   MYSERIAL.begin(230400);
   InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB.
   SPI.begin();
