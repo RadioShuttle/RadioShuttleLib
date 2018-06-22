@@ -35,6 +35,7 @@
 // #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
 #define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
+// #define D21_LONGRA_REV_760  1		// LongRa revision with more pins micro USB
 
 
 
@@ -78,6 +79,27 @@
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
 
+#elif defined (D21_LONGRA_REV_760)
+
+#define SW0       		12              // PA19 switch needs pullup
+#define LED       		LED_BUILTIN     // PA17
+#define MYSERIAL    	SerialUSB
+
+#define LORA_SPI_MOSI   PIN_SPI_MOSI  // PB10
+#define LORA_SPI_MISO   PIN_SPI_MISO  // PA12
+#define LORA_SPI_SCLK   PIN_SPI_SCK   // PB11
+#define LORA_CS         3             // PA09
+#define LORA_RESET      32            // PA28
+#define LORA_DIO0       43            // PA13 used for Rx, Tx Interrupt
+#define LORA_DIO1       NC            // Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
+#define LORA_DIO2       NC             // PA14 FhssChangeChannel when FreqHop is on, unused in RadioShuttle
+#define LORA_DIO3       NC            // PA05 used Cad Detection in RS_Node_Offline/Checking mode
+#define LORA_DIO4       NC            // PA04 FSK mode preamble detected, unused in RadioShuttle
+#define LORA_DIO5       NC            //      FSK mode ready / ClockOut, unused in RadioShuttle
+
+#define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
+#define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
+#define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
 
 #elif defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 
@@ -118,7 +140,7 @@
 #define SW0           0               // uses hardware pullup
 #define LED           2               // green LED
 #define LED2          12              // red LED
-#define MYSERIAL      Serial          // the a regular serial IO1_TXD0/IO3_RXD0
+#define MYSERIAL      Serial          // the regular serial IO1_TXD0/IO3_RXD0
 #define FEATURE_RTC_DS3231            // an I2C clock.
 #define FEATURE_SI7021                // Temperature & Humidity add-on sensor
 
