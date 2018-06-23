@@ -35,7 +35,7 @@
 // #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
 #define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
-// #define D21_LONGRA_REV_760  1		// LongRa revision with more pins micro USB
+// #define D21_LONGRA_REV_740  1		// LongRa revision with more pins micro USB
 
 
 
@@ -79,7 +79,7 @@
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
 
-#elif defined (D21_LONGRA_REV_760)
+#elif defined (D21_LONGRA_REV_740)
 
 #define SW0       		12              // PA19 switch needs pullup
 #define LED       		LED_BUILTIN     // PA17
