@@ -212,7 +212,7 @@ void setup() {
   intr.mode(PullUp);
   intr.debounce();
   MYSERIAL.begin(115200);
-  InitSerial(&MYSERIAL, 5000, &led, intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
+  InitSerial(&MYSERIAL, 5000, &led, !intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
   SPI.begin();
   RTCInit(__DATE__, __TIME__);
 
