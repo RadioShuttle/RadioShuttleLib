@@ -61,6 +61,7 @@ typedef enum RSErrorCode {
     RS_MessageSizeExceeded,			// Message size too long
     RS_InvalidProductCode,			// license does not match
     RS_InvalidParam,				// invalid parameter.
+    RS_OutOfMemory,					// unable to allocate memory
 } RSCode;
 
 
@@ -117,6 +118,12 @@ public:
         MF_Encrypted		= 0x40, // Message is encrypted
         MF_Authentication	= 0x80,	// Message requires prior authentication
         MF_SwitchOptions	= 0x100,// Tell the node to switch the channel for this trans ID
+        MF_FlagsMask		= 0b111111111, // max flags for the RadioShuttle protocol, see msgFlags : 9
+        /*
+         * optional control flags are here.
+         */
+        CF_FreeData			= 0x200, // if a data buffer is provided, free it afterwords.
+        CF_CopyData			= 0x400, // create a copy of the data.
     };
     
     struct RadioStats {
@@ -353,7 +360,7 @@ private:
         int txPower;
         int msgID;
         int retryCount;
-        
+        bool releaseData;
         AppEntry *aep;
         ConnectEntry *cep;
         PacketStatus pStatus;
