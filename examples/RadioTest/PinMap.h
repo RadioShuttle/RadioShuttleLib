@@ -89,8 +89,8 @@
 #define LORA_SPI_MISO   PIN_SPI_MISO  // PA12
 #define LORA_SPI_SCLK   PIN_SPI_SCK   // PB11
 #define LORA_CS         3             // PA09
-#define LORA_RESET      32            // PA28
-#define LORA_DIO0       43            // PA13 used for Rx, Tx Interrupt
+#define LORA_RESET      27            // PA28
+#define LORA_DIO0       38            // PA13 used for Rx, Tx Interrupt
 #define LORA_DIO1       NC            // Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
 #define LORA_DIO2       NC             // PA14 FhssChangeChannel when FreqHop is on, unused in RadioShuttle
 #define LORA_DIO3       NC            // PA05 used Cad Detection in RS_Node_Offline/Checking mode
