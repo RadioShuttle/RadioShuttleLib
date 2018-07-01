@@ -53,6 +53,45 @@ bool ESP32DeepsleepWakeup;
 
 #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)
 
+#ifdef BAT_MESURE_ADC
+float GetBatteryVoltage(void)
+{
+#ifdef D21_LONGRA_REV_740
+  // if (CoreDebug->DHCSR & 1) // TODO check if the debugger is connected
+  //  return 0; // skip this to avoid a conflict with the SWD pin.
+#endif
+  int adcBits = 12;
+  int adcSampleCount = 12;
+  float volt = 0;
+  float vref = 1.0;
+
+#ifdef BAT_MESURE_EN
+  DigitalOut swd(BAT_MESURE_EN);
+  swd = 0;
+#endif
+
+  analogReadResolution(adcBits);
+  analogReference(AR_INTERNAL1V0);
+
+  float adcValue = 0;
+  for (int i = 0; i < adcSampleCount; i++) {
+    adcValue += analogRead(BAT_MESURE_ADC);
+  }
+  adcValue /= (float)adcSampleCount;
+  adcValue += 0.5; // for proper rounding
+  
+  float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
+  volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
+
+  dprintf("Power: %s (ADC: %d Vref: %s)", String(volt).c_str(), (int)adcValue, String(vref, 3).c_str()); 
+
+#ifdef BAT_MESURE_EN
+  DigitalIn swdin2(BAT_MESURE_EN);
+#endif
+  DigitalIn adcin(BAT_MESURE_ADC);
+}
+#endif
+
 #ifdef BOOSTER_EN50
 DigitalOut boost50(BOOSTER_EN50);
 #endif
@@ -100,6 +139,9 @@ void RTCInit(const char *date, const char *timestr)
 #ifdef DISPLAY_EN
   displayEnable = 1; // disconnects the display from the 3.3 power
 #endif
+#ifdef BAT_MESURE_ADC
+  GetBatteryVoltage();
+#endif
   InitWatchDog();
 }
 
@@ -112,30 +154,35 @@ Adafruit_Si7021 *sensorSI7021;
 #ifdef ESP32_ECO_POWER_REV_1
 float GetBatteryVoltage()
 {
-#ifdef EXT_POWER_SW
-  DigitalOut extPWR(EXT_POWER_SW);
+#ifdef BAT_MESURE_EN
+  DigitalOut extPWR(BAT_MESURE_EN);
   extPWR = EXT_POWER_ON;
 #endif
-  float volt;
+  int adcBits = 12;
+  int adcSampleCount = 12;
+  float volt = 0;
   float vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
-  
-  wait_ms(1);
-  analogSetPinAttenuation(BAT_POWER_ADC, ADC_0db); //  1.124 Volt ID 132, 
-  wait_ms(20);  
-  
-  int value = 0;
-  for (int i = 0; i < 12; i++) {
-    value += analogRead(BAT_POWER_ADC); // BAT_POWER_ADC is ADC1
-  }
-  value /= 12;
-  float voltstep = vref/(float)(1<<12); // 12 bit 4096
-  volt = (float) ((value * voltstep) / 82) * (82+220); // 82k, 82k+220k
-  volt -= 0.065; // correction in millivolts
-  dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, value, vref); 
 
-#ifdef EXT_POWER_SW
+  analogReadResolution(adcBits);
+  analogSetPinAttenuation(BAT_MESURE_ADC, ADC_0db); //  1.124 Volt ID 132, 
+  wait_ms(10);  
+  
+  float adcValue = 0;
+  for (int i = 0; i < adcSampleCount; i++) {
+    adcValue += analogRead(BAT_MESURE_ADC); // BAT_MESURE_ADC is ADC1
+  }
+  adcValue /= (float)adcSampleCount;
+  adcValue += 0.5; // for proper rounding.
+
+  float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
+  volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
+  
+  volt -= 0.065; // correction in millivolts
+  dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, (int)adcValue, vref); 
+
+#ifdef BAT_MESURE_EN
   extPWR = EXT_POWER_OFF; 
-  DigitalIn tmpPWR(EXT_POWER_SW);
+  DigitalIn tmpPWR(BAT_MESURE_EN);
   tmpPWR.mode(PullUp); // turn off the power, PullUp will keep it off in deepsleep
 #endif
   return volt;
@@ -222,7 +269,7 @@ void RTCInit(const char *date, const char *timestr)
     DigitalIn extPWR(EXT_POWER_SW);
     extPWR.mode(PullUp); // turn off the power, PullUp will keep it off in deepsleep
 #endif
-#ifdef BAT_POWER_ADC
+#ifdef BAT_MESURE_ADC
     GetBatteryVoltage(); 
 #endif
 
