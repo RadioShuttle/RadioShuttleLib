@@ -331,6 +331,7 @@ private:
         int retry_ms;
         uint32_t lastTxDone;
         volatile bool txDoneReceived;
+        volatile const char *intrDelayedMsg;
         uint32_t random;
         uint32_t random2;
     };
