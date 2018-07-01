@@ -78,6 +78,10 @@
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
+// For LongRa 7.2 new resistors are required before the following can be enabled
+// #define BAT_MESURE_EN   27            // Opptional turn for messurement PA28
+// #define BAT_MESURE_ADC  19            // Analog-in for batterie measurement PB02/A5
+// #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
 #elif defined (D21_LONGRA_REV_740)
 
@@ -100,6 +104,9 @@
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
+#define BAT_MESURE_EN   45            // Opptional turn for messurement PA31/SWD
+#define BAT_MESURE_ADC  19            // Analog-in for batterie measurement PB02/A5
+#define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
 #elif defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 
@@ -119,6 +126,9 @@
 #define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
+// For Feather M0 new resistors are required before the following can be enabled
+// #define BAT_MESURE_ADC  D9            // Analog-in for batterie measurement PA07/D9
+// #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1% (R6/R3)
 
 /*
  * PIN_LED_RXL and PIN_LED_TXL are already defined.
@@ -164,7 +174,9 @@
 #define EXT_POWER_ON    0
 #define EXT_POWER_OFF   1
 
-#define BAT_POWER_ADC   35            // uses a 1.0
+#define BAT_MESURE_EN   EXT_POWER_SW  // Opptional turn for messurement PA31/SWD
+#define BAT_MESURE_ADC  35            // Analog-in for batterie measurement
+#define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
 #else
 
