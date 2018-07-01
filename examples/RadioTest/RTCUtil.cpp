@@ -165,7 +165,6 @@ float GetBatteryVoltage()
 
   analogReadResolution(adcBits);
   analogSetPinAttenuation(BAT_MESURE_ADC, ADC_0db); //  1.124 Volt ID 132, 
-  wait_ms(10);  
   
   float adcValue = 0;
   for (int i = 0; i < adcSampleCount; i++) {
