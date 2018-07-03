@@ -57,8 +57,8 @@ bool ESP32DeepsleepWakeup;
 float GetBatteryVoltage(void)
 {
 #ifdef D21_LONGRA_REV_740
-  // if (CoreDebug->DHCSR & 1) // TODO check if the debugger is connected
-  //  return 0; // skip this to avoid a conflict with the SWD pin.
+  if (DSU->STATUSB.bit.DBGPRES) // skip this when the debugger uses the SWD pin
+    return 0;
 #endif
   int adcBits = 12;
   int adcSampleCount = 12;
