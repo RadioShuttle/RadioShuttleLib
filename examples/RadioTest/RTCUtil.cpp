@@ -18,6 +18,7 @@
  #include <Wire.h>
 #endif
 #ifdef FEATURE_RTC_DS3231
+ #define CONFIG_UNIXTIME // enbale UNIX time for the rodan 3231 library
  #include "ds3231.h"
 #endif
 #ifdef FEATURE_SI7021
