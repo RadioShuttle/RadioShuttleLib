@@ -18,7 +18,6 @@
  #include <Wire.h>
 #endif
 #ifdef FEATURE_RTC_DS3231
- #define CONFIG_UNIXTIME // enbale UNIX time for the rodan 3231 library
  #include "ds3231.h"
 #endif
 #ifdef FEATURE_SI7021
@@ -228,7 +227,7 @@ void RTCInit(const char *date, const char *timestr)
     }
     struct timeval tv;
     memset(&tv, 0, sizeof(tv));
-    tv.tv_sec = ds.unixtime;;
+    tv.tv_sec = ds.unixtime;
     struct timezone tz;
     memset(&tz, 0, sizeof(tz));
     tz.tz_minuteswest = 0;
@@ -277,7 +276,7 @@ void RTCInit(const char *date, const char *timestr)
   sensorSI7021 = new Adafruit_Si7021();
   if (sensorSI7021->begin()) {
       hasSensor = true;
-      dprintf("%s: Rev(%d)  %.2f°C  Humidity: %.2f%%", sensorSI7021->model, sensorSI7021->revision, sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
+      dprintf("%s: Rev(%d)  %.2f°C  Humidity: %.2f%%", sensorSI7021->getModel(), sensorSI7021->getRevision(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
   } else {
     delete sensorSI7021;
     sensorSI7021 = NULL;
@@ -291,7 +290,7 @@ void RTCInit(const char *date, const char *timestr)
  #ifdef FEATURE_SI7021
     if (hasSensor) {
        sensorSI7021 = new Adafruit_Si7021();
-       dprintf("%s: %.2f°C  Humidity: %.2f%%", sensorSI7021->model, sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
+       dprintf("%s: %.2f°C  Humidity: %.2f%%", sensorSI7021->getModel(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
      }
 #endif
   }
