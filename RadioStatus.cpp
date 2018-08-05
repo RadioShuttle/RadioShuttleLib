@@ -215,12 +215,12 @@ MyRadioStatus::UpdateDisplay(bool invertDisplay)
              mytm.tm_hour, mytm.tm_min, mytm.tm_sec);
     snprintf(_line4, sizeof(_line4), "Packets RX(%d) TX(%d)", _totalRX, _totalTX);
     snprintf(_line5, sizeof(_line5), "RXErr(%d) TOut(%d) %.2f %d", _totalError, _totalTimeout, (double)_frequency/1000000.0, _spreadingFactor);
-#if 1
+
     if (invertDisplay)
         display->invertDisplay();
     else
         display->normalDisplay();
-#endif
+
     display->setFont(ArialMT_Plain_10);
     display->clear();
 
@@ -231,8 +231,6 @@ MyRadioStatus::UpdateDisplay(bool invertDisplay)
     display->drawString(0, yoff, String(_line3));
     yoff += hight;
     display->drawString(0, yoff, String(_line4));
-    yoff += hight;
-    display->drawString(0, yoff, String(_line5));
     yoff += hight;
     
     display->display();
