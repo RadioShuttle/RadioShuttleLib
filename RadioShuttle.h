@@ -139,6 +139,9 @@ public:
         int protocolError;
         int noMemoryError;
         int decryptError;
+		int lastRSSI;
+		int lastSNR;
+		devid_t lastRXdeviceID;
         time_t startupTime;
     };
     
