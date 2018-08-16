@@ -26,11 +26,12 @@ using namespace std;
 #define FEATURE_LORA	1
 #endif
 
-#ifdef DEVICE_LOWPOWERTIMER
+#if defined(DEVICE_LPTICKER) || defined(DEVICE_LOWPOWERTIMER) // LOWPOWERTIMER in older mbed versions
 #define MyTimeout LowPowerTimeout
 #define my_us_ticker_read	lp_ticker_read
 #else
 #define MyTimeout Timeout
+#define my_us_ticker_read	us_ticker_read
 #endif
 
 #include <list>
