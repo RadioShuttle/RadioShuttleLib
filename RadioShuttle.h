@@ -20,11 +20,13 @@
 #undef max
 #undef map
 #define my_us_ticker_read	us_getTicker
+#define MyTimeout Timeout
 #define STATIC_ASSERT   _Static_assert
 #define ASSERT assert
 using namespace std;
 #define FEATURE_LORA	1
-#endif
+
+#else
 
 #if defined(DEVICE_LPTICKER) || defined(DEVICE_LOWPOWERTIMER) // LOWPOWERTIMER in older mbed versions
 #define MyTimeout LowPowerTimeout
@@ -32,6 +34,8 @@ using namespace std;
 #else
 #define MyTimeout Timeout
 #define my_us_ticker_read	us_ticker_read
+#endif
+
 #endif
 
 #include <list>
