@@ -276,7 +276,7 @@ void RTCInit(const char *date, const char *timestr)
   sensorSI7021 = new Adafruit_Si7021();
   if (sensorSI7021->begin()) {
       hasSensor = true;
-      dprintf("%s: Rev(%d)  %.2f°C  Humidity: %.2f%%", sensorSI7021->getModel(), sensorSI7021->getRevision(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
+      dprintf("%s: Rev(%d)  %.2f°C  Humidity: %.2f%%", sensorSI7021->getModelName(), sensorSI7021->getRevision(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
   } else {
     delete sensorSI7021;
     sensorSI7021 = NULL;
@@ -290,7 +290,7 @@ void RTCInit(const char *date, const char *timestr)
  #ifdef FEATURE_SI7021
     if (hasSensor) {
        sensorSI7021 = new Adafruit_Si7021();
-       dprintf("%s: %.2f°C  Humidity: %.2f%%", sensorSI7021->getModel(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
+       dprintf("%s: %.2f°C  Humidity: %.2f%%", sensorSI7021->getModelName(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
      }
 #endif
   }
