@@ -35,7 +35,7 @@
 // #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
 #define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
-// #define D21_LONGRA_REV_740  1		// LongRa revision with more pins micro USB
+// #define D21_LONGRA_REV_750  1		// LongRa revision with more pins micro USB
 
 
 
@@ -83,7 +83,7 @@
 // #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 // #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
-#elif defined (D21_LONGRA_REV_740)
+#elif defined (D21_LONGRA_REV_750)
 
 #define SW0       		12              // PA19 switch needs pullup
 #define LED       		LED_BUILTIN     // PA17
