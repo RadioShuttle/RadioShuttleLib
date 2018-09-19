@@ -35,7 +35,7 @@
 // #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
 #define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
-// #define D21_LONGRA_REV_750  1		// LongRa revision with more pins micro USB
+//#define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
 
 
 
