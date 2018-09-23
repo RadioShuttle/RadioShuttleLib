@@ -132,6 +132,10 @@ MyRadioStatus::~MyRadioStatus()
 void
 MyRadioStatus::TXStart(int AppID, int toStation, int length, int dBm)
 {
+	UNUSED(AppID);
+	UNUSED(toStation);
+	UNUSED(length);
+	UNUSED(dBm);
     if (ledTX) {
     	if (inverted)
             *ledTX = 0;
@@ -162,6 +166,9 @@ MyRadioStatus::TXComplete(void)
 void
 MyRadioStatus::RxDone(int size, int rssi, int snr)
 {
+	UNUSED(size);
+	UNUSED(rssi);
+	UNUSED(snr);
     if (ledRX) {
         if (inverted)
             *ledRX = 0;
@@ -192,6 +199,8 @@ MyRadioStatus::RxCompleted(void)
 void
 MyRadioStatus::MessageTimeout(int App, int toStation)
 {
+	UNUSED(App);
+	UNUSED(toStation);
     if (ledTimeout)
     	*ledTimeout = 1;
     _totalTimeout++;
@@ -204,6 +213,7 @@ MyRadioStatus::MessageTimeout(int App, int toStation)
 void
 MyRadioStatus::UpdateDisplay(bool invertDisplay)
 {
+	UNUSED(invertDisplay);
 #ifdef ARDUINO_Heltec_WIFI_LoRa_32
     int yoff = 0;
     int hight = 12;

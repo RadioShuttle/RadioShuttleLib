@@ -9,6 +9,10 @@
 #include "SSD1306.h"
 #endif
 
+#ifndef UNUSED
+ #define UNUSED(x) (void)(x)
+#endif
+
 
 class MyRadioStatus : public RadioStatusInterface {
 public:
