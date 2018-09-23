@@ -4,8 +4,8 @@
  * 30826 Garbsen (Hannover) Germany
  */
 #ifdef ARDUINO 
-#define RS_MAJOR    2
-#define RS_MINOR    8
+#define RS_MAJOR    3
+#define RS_MINOR    0
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
@@ -35,7 +35,7 @@
 // #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
 #define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
-//#define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
+// #define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
 
 
 
