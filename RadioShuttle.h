@@ -88,6 +88,7 @@ public:
     };
     
     enum RadioType {
+		RS_RadioType_Invalid = 0,
         RS_Node_Offline,   	// Sleep mode until sending, < 10k RAM
         RS_Node_Checking,   // Sleep mode, checks for messages regulary, < 10k RAM
         RS_Node_Online,     // Always powered-on, < 10k RAM
