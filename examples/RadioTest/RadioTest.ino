@@ -266,7 +266,7 @@ void setup() {
 #endif
 
   if (myDeviceID == 0 || myCode == 0 || radioTypeMode == 0) {
-    dprintf("LORA_DEVICE_ID and/or LORA_CODE_ID and/or LORA_RADIO_TYPE not set, use PropertyEditor to set this!");
+    dprintf("LORA_DEVICE_ID or LORA_CODE_ID or LORA_RADIO_TYPE not set, use PropertyEditor to set this!");
     return;
   }
   if (radioTypeMode >= RadioShuttle::RS_Station_Basic)
@@ -275,8 +275,9 @@ void setup() {
   /*
    * Here are optional properties for custom settings
    */
-  remoteDeviceID = prop.GetProperty(prop.LORA_REMOTE_ID, 0);
   int value;
+  if ((value = prop.GetProperty(prop.LORA_REMOTE_ID, 0)) != 0)
+    remoteDeviceID = value;
   if ((value = prop.GetProperty(prop.LORA_FREQUENCY, 0)) != 0)
     myProfile[0].Frequency = value;
   if ((value = prop.GetProperty(prop.LORA_BANDWIDTH, 0)) != 0)
