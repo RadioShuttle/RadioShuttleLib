@@ -4,6 +4,24 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
+
+ /*
+  * When the USE_DEMOBOARD_PAIR is disabled the following properties must be set
+  * once using the PropertyEditor (see Exambles->Arduino-mbed-APIs):
+  * For LongRa boards only: (already factory preset on the ECO Power boards)
+  *   LORA_DEVICE_ID (if not set, see on back of PCB, e.g. s10=123 (for ID 123)
+  *   LORA_CODE_ID   (if not set, see on back of PCB, e.g. s11=0x6b17e559
+  * Always:
+  * LORA_RADIO_TYPE 
+  *   - for the server s14=4 (RS_Station_Basic)
+  *   - for the client s14=3 (RS_Node_Online) or s14=1 (RS_Node_Offline)
+  * LORA_REMOTE_ID e.g.: s12=123 (replace 123 with your other board ID)
+  * Optionally:
+  * LORA_APP_PWD e.g.: s20=Hello (must be identical for all boards this this app)
+  * The password will only allow clients to communicate with the same password
+  * For AES128-bit content encryption in addition to a password set useAES = true (in line 46)
+  */
+  
 #include "PinMap.h"
 #include <arduino-mbed.h>
 #include <sx1276-mbed-hal.h>
@@ -25,14 +43,13 @@
 
 
 bool server;                  // automatically being set if radioTypeMode RadioShuttle::RS_Station_Basic
-bool usePassword = false;     // app password that can be used independently of AES, use property editor to set it.
 bool useAES = false;          // AES needs the usePassword option on
 
 #define myTempSensorApp 0x0001 // Must be unique world wide.
 int myDeviceID;
 int myCode;
 int remoteDeviceID;
-RadioShuttle::RadioType radioTypeMode;            // 0 = RS_Node_Offline, 2 = RS_Node_Online, 3 = RS_Station_Basic
+RadioShuttle::RadioType radioTypeMode;  // 1 = RS_Node_Offline, 3 = RS_Node_Online, 4 = RS_Station_Basic
 const char *appPassword;
 
 /*
@@ -289,7 +306,7 @@ void setup() {
     myProfile[0].TXPower = value;    
   if ((value = prop.GetProperty(prop.LORA_FREQUENCY_OFFSET, 0)) != 0)
     myProfile[0].FrequencyOffset = value;
-  appPassword = prop.GetProperty(prop.LORA_APP_PWD, (const char *)NULL); // NULL if not found.
+  appPassword = prop.GetProperty(prop.LORA_APP_PWD, (const char *)NULL);
     
   if (InitRadio() != 0)
     return;
@@ -302,7 +319,7 @@ void loop() {
   if (cnt != pressedCount) {
     int flags = 0;
     flags |= RadioShuttle::MF_NeedsConfirm; // optional
-    if (usePassword && useAES && appPassword)
+    if (useAES && appPassword)
       flags |= RadioShuttle::MF_Encrypted;
 
     if (server) {
