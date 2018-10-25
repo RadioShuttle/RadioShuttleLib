@@ -56,7 +56,7 @@ bool ESP32DeepsleepWakeup;
 #ifdef BAT_MESURE_ADC
 float GetBatteryVoltage(void)
 {
-#ifdef D21_LONGRA_REV_740
+#ifdef D21_LONGRA_REV_750
   if (DSU->STATUSB.bit.DBGPRES) // skip this when the debugger uses the SWD pin
     return 0;
 #endif
@@ -89,6 +89,7 @@ float GetBatteryVoltage(void)
   DigitalIn swdin2(BAT_MESURE_EN);
 #endif
   DigitalIn adcin(BAT_MESURE_ADC);
+  return volt;
 }
 #endif
 
