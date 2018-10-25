@@ -247,6 +247,7 @@ void setup() {
   myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
   myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
   radioTypeMode = (RadioShuttle::RadioType)prop.GetProperty(prop.LORA_RADIO_TYPE, 0);
+  remoteDeviceID = 1;
 
 #define USE_DEMOBOARD_PAIR
 #ifdef USE_DEMOBOARD_PAIR
@@ -288,7 +289,7 @@ void setup() {
     myProfile[0].TXPower = value;    
   if ((value = prop.GetProperty(prop.LORA_FREQUENCY_OFFSET, 0)) != 0)
     myProfile[0].FrequencyOffset = value;
-  appPassword = prop.GetProperty(prop.LORA_REMOTE_ID, (const char *)NULL); // NULL if not found.
+  appPassword = prop.GetProperty(prop.LORA_APP_PWD, (const char *)NULL); // NULL if not found.
     
   if (InitRadio() != 0)
     return;
