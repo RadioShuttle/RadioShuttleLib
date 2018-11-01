@@ -7,19 +7,19 @@
 
  /*
   * When the USE_DEMOBOARD_PAIR is disabled the following properties must be set
-  * once using the PropertyEditor (see Exambles->Arduino-mbed-APIs):
-  * For LongRa boards only: (already factory preset on the ECO Power boards)
+  * once using the PropertyEditor (see Examples->Arduino-mbed-APIs):
+  * For LongRa boards only (already factory preset on the ECO Power boards):
   *   LORA_DEVICE_ID (if not set, see on back of PCB, e.g. s10=123 (for ID 123)
   *   LORA_CODE_ID   (if not set, see on back of PCB, e.g. s11=0x6b17e559
   * Always:
   * LORA_RADIO_TYPE 
   *   - for the server s14=4 (RS_Station_Basic)
   *   - for the client s14=3 (RS_Node_Online) or s14=1 (RS_Node_Offline)
-  * LORA_REMOTE_ID e.g.: s12=123 (replace 123 with your other board ID)
+  * LORA_REMOTE_ID, e.g.: s12=123 (replace 123 with your remote board ID)
   * Optionally:
-  * LORA_APP_PWD e.g.: s20=Hello (must be identical for all boards this this app)
+  * LORA_APP_PWD, e.g.: s20=Hello (must be identical for all boards using this app)
   * The password will only allow clients to communicate with the same password
-  * For AES128-bit content encryption in addition to a password set useAES = true (in line 46)
+  * For AES128-bit content encryption, in addition to a password, set useAES = true (in line 46)
   */
   
 #include "PinMap.h"
