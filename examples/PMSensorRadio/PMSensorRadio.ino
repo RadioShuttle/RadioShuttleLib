@@ -4,6 +4,23 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
+
+ /*
+  * The following properties must be set once using the PropertyEditor 
+  * (see Examples->Arduino-mbed-APIs):
+  * For LongRa boards only (already factory preset on the ECO Power boards):
+  *   LORA_DEVICE_ID (if not set, see on back of PCB, e.g. s10=123 (for ID 123)
+  *   LORA_CODE_ID   (if not set, see on back of PCB, e.g. s11=0x6b17e559
+  * Always:
+  * LORA_RADIO_TYPE 
+  *   - for the server s14=4 (RS_Station_Basic)
+  *   - for the client s14=3 (RS_Node_Online) or s14=1 (RS_Node_Offline)
+  * LORA_REMOTE_ID, e.g.: s12=123 (replace 123 with your remote board ID)
+  * Optionally:
+  * LORA_APP_PWD, e.g.: s20=Hello (must be identical for all boards using this app)
+  * The password will only allow clients to communicate with the same password
+  * For AES128-bit content encryption, in addition to a password, set useAES = true (in line 46)
+  */
 #include "PinMap.h"
 #include <arduino-mbed.h>
 #include <sx1276-mbed-hal.h>
@@ -25,19 +42,17 @@
     } \
   }
 
-#define RADIO_SERVER          // deactivate this for the node.
 
-bool server = false;          // enabling of Station device, set it to true for server mode
-bool usePassword = false;     // password that can be used independently of AES
+bool server;                  // automatically being set if radioTypeMode RadioShuttle::RS_Station_Basic
 bool useAES = false;          // AES needs the usePassword option on
-bool useNodeOffline = false;  // when idle turns the radio off and enters deepsleep
 
 
 #define myPMSensorApp 10 // Must be unique world wide.
 int myDeviceID;
 int myCode;
 int remoteDeviceID;
-unsigned char samplePassword[] = { "RadioShuttleFly" };
+RadioShuttle::RadioType radioTypeMode;  // 1 = RS_Node_Offline, 3 = RS_Node_Online, 4 = RS_Station_Basic
+const char *appPassword;
 
 /*
  * For details review: SX1276GenericLib/sx1276/sx1276.h
@@ -51,7 +66,7 @@ unsigned char samplePassword[] = { "RadioShuttleFly" };
  * Utilisation of these channels should not exceed 1% per hour per node
  * Bandwidth changes other than 125k requires different channels distances
  */
-const RadioShuttle::RadioProfile myProfile[] =  {
+RadioShuttle::RadioProfile myProfile[] =  {
   /*
    * Our default profile
    * frequency, bandwidth, TX power, spreading factor, frequency-offset
@@ -120,8 +135,22 @@ void PMSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID, 
 }
 
 
+
+/*
+ * DigitalOut is a simple C++ wrapper around the GPIO ports (compatible with mbed.org).
+ * It is easy to use and easier to understand, it allows reading and setting the object.
+ * DigitalOut, DigitalIn and DigitalInOut are available.
+ */
 DigitalOut led(LED);
 
+/*
+ * InterruptIn allows input registration for a specific pin.
+ * intr.mode() "PullUp" or "PullDown" is supported.
+ * intr.fall, intr.rise, high, low allows registering an interrupt
+ * handler to be called upon a pin change event.
+ * A callback() wrapper is required to provide C or C++ handlers
+ * (compatible with mbed.org).
+ */
 InterruptIn intr(SW0);
 volatile int pressedCount = 0;
 
@@ -176,21 +205,17 @@ int InitRadio()
   /*
    * The password parameter can be skipped if no password is required
    */
-  if (usePassword) {
-    err = rs->RegisterApplication(myPMSensorApp, &PMSensorRecvHandler, samplePassword, sizeof(samplePassword) - 1);
-  } else {
-    err = rs->RegisterApplication(myPMSensorApp, &PMSensorRecvHandler);
-  }
+  err = rs->RegisterApplication(myPMSensorApp, &PMSensorRecvHandler, (void *)appPassword);
+
   CHECK_ERROR_RET("RegisterApplication", err);
 
-  if (server) {
-    err = rs->Startup(RadioShuttle::RS_Station_Basic);
+   if (server) {
+    // usually RadioShuttle::RS_Station_Basic, set via properties
+    err = rs->Startup(radioTypeMode);
     dprintf("Startup as a Server: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
   } else {
-    if (useNodeOffline)
-      err = rs->Startup(RadioShuttle::RS_Node_Offline);
-    else
-      err = rs->Startup(RadioShuttle::RS_Node_Online);
+    // usually RadioShuttle::RS_Node_Online or RadioShuttle, set via properties
+    err = rs->Startup(radioTypeMode); 
     dprintf("Startup as a Node: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
     if (!err && rs->AppRequiresAuthentication(myPMSensorApp) == RS_PasswordSet) {
       err = rs->Connect(myPMSensorApp, remoteDeviceID);
@@ -230,7 +255,9 @@ void setup() {
   RTCInit(__DATE__, __TIME__);
 
   led = 1;
-  if (!SerialUSB_active && useNodeOffline) {
+  
+  bool nodeOffline = prop.GetProperty(prop.LORA_RADIO_TYPE, 0) == RadioShuttle::RS_Node_Offline;
+  if (!SerialUSB_active && nodeOffline) {
 #ifdef ARDUINO_SAMD_ZERO
     intr.low(callback(&SwitchInput)); // in deepsleep, D21 supports only low/high.
 #else
@@ -240,29 +267,52 @@ void setup() {
    intr.fall(callback(&SwitchInput));
   }
     
+  if (ESP32DeepsleepWakeup) {
+    /*
+     * We received a wakeup after an ESP32 deepsleep timeout or IO activity 
+     * on registered pins. Here we can add some checking code and quickly enter
+     * into deepsleep() again, when appropriate (nothing to do).
+     * Omitting the additional startup code and messages will save energy 
+     */
+    // Your code goes here:
+    // deepsleep();
+  }
+  
   dprintf("Welcome to RadioShuttle - PMSensor v%d.%d", RS_MAJOR, RS_MINOR);
 
-#ifdef ESP32_ECO_POWER // uses included config in board
+
+  /*
+   * The following are required properties for the operation
+   */
   myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
   myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
-#else // LongRa, etc. uses manual config
-  #ifdef RADIO_SERVER
-    myDeviceID = 13;
-    myCode = 0x21C4B11C;
-  #else // node
-    myDeviceID = 14;
-    myCode = 0x21C3B11C;
-  #endif
-#endif
+  radioTypeMode = (RadioShuttle::RadioType)prop.GetProperty(prop.LORA_RADIO_TYPE, 0);
+  remoteDeviceID = 1;
 
-#ifdef RADIO_SERVER
-  remoteDeviceID = 1; // usually this is the board ID of the other board
-  server = true;
-#else // client
-  remoteDeviceID = 1; // usually this is the board ID of the other board
-  server = false;
-#endif
+  if (myDeviceID == 0 || myCode == 0 || radioTypeMode == 0) {
+    dprintf("LORA_DEVICE_ID or LORA_CODE_ID or LORA_RADIO_TYPE not set, use PropertyEditor to set this!");
+    return;
+  }
+  if (radioTypeMode >= RadioShuttle::RS_Station_Basic)
+    server = true;
 
+  /*
+   * Here are optional properties for custom settings
+   */
+  int value;
+  if ((value = prop.GetProperty(prop.LORA_REMOTE_ID, 0)) != 0)
+    remoteDeviceID = value;
+  if ((value = prop.GetProperty(prop.LORA_FREQUENCY, 0)) != 0)
+    myProfile[0].Frequency = value;
+  if ((value = prop.GetProperty(prop.LORA_BANDWIDTH, 0)) != 0)
+    myProfile[0].Bandwidth = value;
+  if ((value = prop.GetProperty(prop.LORA_SPREADING_FACTOR, 0)) != 0)
+    myProfile[0].SpreadingFaktor = value;
+  if ((value = prop.GetProperty(prop.LORA_TXPOWER, 0)) != 0)
+    myProfile[0].TXPower = value;    
+  if ((value = prop.GetProperty(prop.LORA_FREQUENCY_OFFSET, 0)) != 0)
+    myProfile[0].FrequencyOffset = value;
+  appPassword = prop.GetProperty(prop.LORA_APP_PWD, (const char *)NULL);
   pm.SensorInit(&PMSerial);        // Serial1 = D0(RX), D1(TX)
   lastPMReadTime = s_getTicker();
 
@@ -290,7 +340,7 @@ void loop() {
   if (cnt != pressedCount) {
     int flags = 0;
     // flags |= RadioShuttle::MF_NeedsConfirm; // optional
-    if (usePassword && useAES)
+    if (useAES && appPassword)
       flags |= RadioShuttle::MF_Encrypted; // optional, not needed for PMSensor data
 
     if (server) {

@@ -4,45 +4,46 @@
  * 30826 Garbsen (Hannover) Germany
  */
 #ifdef ARDUINO 
-#define RS_MAJOR    2
-#define RS_MINOR    4
+#define RS_MAJOR    3
+#define RS_MINOR    1
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
-#define FEATURE_LORA	1
+#define FEATURE_LORA  1
 
-#define	SW0				3		// switch needs pullup.
+#define SW0       3   // switch needs pullup.
 #define LED       LED_BUILTIN
 
 #define MYSERIAL          Serial
 
-#define LORA_SPI_MOSI   PIN_SPI_MOSI	// PA06 
-#define LORA_SPI_MISO   PIN_SPI_MISO	// PA04
-#define LORA_SPI_SCLK   PIN_SPI_SCK		// PA07
-#define LORA_CS			    PIN_SPI_SS		// PA05
-#define LORA_RESET      PIN_A0				// PB00
-#define LORA_DIO0       PIN_A1	      // PB01 used for Rx, Tx Interrupt 	
-#define LORA_DIO1       PIN_A2	  		// PA10 Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
-#define LORA_DIO2       PIN_A3	      // PA11 FhssChangeChannel when FreqHop is on (unused in RadioShuttle)
-#define LORA_DIO3       PIN_A4	      // PA02 used Cad Detection in RS_Node_Offline/Checking mode
+#define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA06 
+#define LORA_SPI_MISO   PIN_SPI_MISO  // PA04
+#define LORA_SPI_SCLK   PIN_SPI_SCK   // PA07
+#define LORA_CS         PIN_SPI_SS    // PA05
+#define LORA_RESET      PIN_A0        // PB00
+#define LORA_DIO0       PIN_A1        // PB01 used for Rx, Tx Interrupt   
+#define LORA_DIO1       PIN_A2        // PA10 Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
+#define LORA_DIO2       PIN_A3        // PA11 FhssChangeChannel when FreqHop is on (unused in RadioShuttle)
+#define LORA_DIO3       PIN_A4        // PA02 used Cad Detection in RS_Node_Offline/Checking mode
 #define LORA_DIO4       PIN_A5        // PA03 FSK mode preamble detected, unused in RadioShuttle
-#define LORA_DIO5       NC		        // NC   FSK mode ready / ClockOut, unused in RadioShuttle
+#define LORA_DIO5       NC            // NC   FSK mode ready / ClockOut, unused in RadioShuttle
 
 #elif __SAMD21G18A__ // Zero
 #define FEATURE_LORA  1
 
-// #define D21_LONGRA_REV_200  1		// board with Lipo power supply/charger, mini USB
-// #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
-// #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
-#define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
+// #define D21_LONGRA_REV_200  1    // board with Lipo power supply/charger, mini USB
+// #define D21_LONGRA_REV_301  1    // board with Lipo power supply/charger, micro USB
+// #define D21_LONGRA_REV_630  1    // board with Lipo power supply/charger, micro USB
+#define D21_LONGRA_REV_720  1   // Maker Faire Hannover revision, micro USB
+// #define D21_LONGRA_REV_750  1    // LongRa revision with more pins, micro USB
 
 
 
 #if defined(D21_LONGRA_REV_301) || defined(D21_LONGRA_REV_200)
 
-#define SW0      		  1   // switch needs pullup.
-#define LED       		0
-#define MYSERIAL    	SerialUSB
+#define SW0           1   // switch needs pullup.
+#define LED           0
+#define MYSERIAL      SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA06?
 #define LORA_SPI_MISO   PIN_SPI_MISO  // PA04?
@@ -58,9 +59,9 @@
 
 #elif defined (D21_LONGRA_REV_630) || defined (D21_LONGRA_REV_720)
 
-#define SW0       		12              // PA19 switch needs pullup
-#define LED       		LED_BUILTIN     // PA17
-#define MYSERIAL    	SerialUSB
+#define SW0           12              // PA19 switch needs pullup
+#define LED           LED_BUILTIN     // PA17
+#define MYSERIAL      SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PB10
 #define LORA_SPI_MISO   PIN_SPI_MISO  // PA12
@@ -77,7 +78,35 @@
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
+// For LongRa 7.2 new resistors are required before the following can be enabled
+// #define BAT_MESURE_EN   27            // Optional: turn for measurement PA28
+// #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
+// #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
+#elif defined (D21_LONGRA_REV_750)
+
+#define SW0           12              // PA19 switch needs pullup
+#define LED           LED_BUILTIN     // PA17
+#define MYSERIAL      SerialUSB
+
+#define LORA_SPI_MOSI   PIN_SPI_MOSI  // PB10
+#define LORA_SPI_MISO   PIN_SPI_MISO  // PA12
+#define LORA_SPI_SCLK   PIN_SPI_SCK   // PB11
+#define LORA_CS         3             // PA09
+#define LORA_RESET      27            // PA28
+#define LORA_DIO0       38            // PA13 used for Rx, Tx Interrupt
+#define LORA_DIO1       NC            // Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
+#define LORA_DIO2       NC             // PA14 FhssChangeChannel when FreqHop is on, unused in RadioShuttle
+#define LORA_DIO3       NC            // PA05 used Cad Detection in RS_Node_Offline/Checking mode
+#define LORA_DIO4       NC            // PA04 FSK mode preamble detected, unused in RadioShuttle
+#define LORA_DIO5       NC            //      FSK mode ready / ClockOut, unused in RadioShuttle
+
+#define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
+#define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
+#define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
+#define BAT_MESURE_EN   45            // Opptional turn for measurement PA31/SWD
+#define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
+#define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
 #elif defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 
@@ -97,6 +126,9 @@
 #define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
 
+// For Feather M0 new resistors are required before the following can be enabled
+// #define BAT_MESURE_ADC  D9            // Analog-in for batterie measurement PA07/D9
+// #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1% (R6/R3)
 
 /*
  * PIN_LED_RXL and PIN_LED_TXL are already defined.
@@ -118,7 +150,7 @@
 #define SW0           0               // uses hardware pullup
 #define LED           2               // green LED
 #define LED2          12              // red LED
-#define MYSERIAL      Serial          // the a regular serial IO1_TXD0/IO3_RXD0
+#define MYSERIAL      Serial          // the regular serial IO1_TXD0/IO3_RXD0
 #define FEATURE_RTC_DS3231            // an I2C clock.
 #define FEATURE_SI7021                // Temperature & Humidity add-on sensor
 
@@ -142,7 +174,9 @@
 #define EXT_POWER_ON    0
 #define EXT_POWER_OFF   1
 
-#define BAT_POWER_ADC   35            // uses a 1.0
+#define BAT_MESURE_EN   EXT_POWER_SW  // Turn power on for messurement
+#define BAT_MESURE_ADC  35            // Analog-in for batterie measurement
+#define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
 #else
 
