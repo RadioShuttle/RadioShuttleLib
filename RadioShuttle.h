@@ -19,8 +19,8 @@
 #undef min
 #undef max
 #undef map
-#define my_us_ticker_read	us_getTicker
 #define MyTimeout Timeout
+#define MyTimer	Timer
 #define STATIC_ASSERT   _Static_assert
 #define ASSERT assert
 using namespace std;
@@ -30,10 +30,10 @@ using namespace std;
 
 #if defined(DEVICE_LPTICKER) || defined(DEVICE_LOWPOWERTIMER) // LOWPOWERTIMER in older mbed versions
 #define MyTimeout LowPowerTimeout
-#define my_us_ticker_read	lp_ticker_read
+#define MyTimer	LowPowerTimer
 #else
 #define MyTimeout Timeout
-#define my_us_ticker_read	us_ticker_read
+#define MyTimer	Timer
 #endif
 
 #endif
@@ -568,6 +568,7 @@ private:
     map<devid_t, SignalStrengthEntry> _signals;
     list<TimeOnAirSlotEntry> _airtimes;
     MyTimeout *timer;
+    MyTimer *ticker;
     volatile uint32_t prevWakeup;
     int SetTimerCount;
     
