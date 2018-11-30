@@ -9,3 +9,4 @@ extern void DeInitRadio(void);
 extern void RadioTest();
 extern int RadioUpdate(bool keyPressed);
 extern bool RadioISIdle();
+extern void InitLoRaChipWithShutdown();
