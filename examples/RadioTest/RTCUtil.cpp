@@ -240,7 +240,7 @@ void RTCInit(const char *date, const char *timestr)
   if (i && i != DS3231_get_aging())
     DS3231_set_aging(i);
 #else // without ds3231
-  if (!now)) {
+  if (!now) {
     time_t t = cvt_date(date, timestr);
     struct timeval tv;
     memset(&tv, 0, sizeof(tv));
