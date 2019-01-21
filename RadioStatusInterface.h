@@ -1,6 +1,6 @@
 /*
  * The file is licensed under the Apache License, Version 2.0
- * (c) 2017 Helmut Tschemernjak
+ * (c) 2019 Helmut Tschemernjak
  * 30826 Garbsen (Hannover) Germany
  */
 
