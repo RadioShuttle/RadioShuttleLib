@@ -256,7 +256,7 @@ int RadioTest()
         }
         
         if (rs->Idle() && rs->GetRadioType() == RadioShuttle::RS_Node_Offline) {
-            sleep() // uses deepsleep() when idle lowest power mode;
+            sleep(); // uses deepsleep() when idle lowest power mode;
         } else {
             sleep();  // timer and radio interrupts will wakeup us
         }
