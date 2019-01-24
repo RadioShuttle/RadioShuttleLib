@@ -11,6 +11,11 @@
 #include "RadioStatus.h"
 #include "RadioSecurity.h"
 #include "main.h"
+#ifdef  FEATURE_NVPROPERTY
+#include <NVPropertyProviderInterface.h>
+#include "NVProperty.h"
+#endif
+
 
 #ifdef FEATURE_LORA
 
@@ -33,22 +38,20 @@ bool server = false;
 
 bool usePassword = false;	// password the can used indepenend of AES
 bool useAES = false;		// AES needs the usePassword option on
-bool useNodeOffline = false;	// when idle turns the radio off and enters deelsleep
+bool useNodeOffline = true;	// when idle turns the radio off and enters deelsleep
 
 
-enum SensorsIDs { // Must be unique world wide.
-    myTempSensorApp = 0x0001,
+
+static const int myTempSensorApp = 0x0001;  // Must be unique world wide.
 #ifdef RADIO_SERVER
-    myDeviceID = 1,
-    myCode = 0,
-    remoteDeviceID = 14,
-    //remoteDeviceID = 132,
+int myDeviceID = 1,;
+int remoteDeviceID = 14;
+uint32_t myCode = 0;
 #else
-    myDeviceID = 14,
-    myCode = 0,
-    remoteDeviceID = 1,
+int myDeviceID = 14;
+int remoteDeviceID = 1;
+uint32_t myCode = 0;
 #endif
-};
 
 unsigned char samplePassword[] = { "RadioShuttleFly" };
 
@@ -142,7 +145,15 @@ int InitRadio()
     Radio *radio;
     RSCode err;
     
-    
+#ifdef  FEATURE_NVPROPERTY
+	{
+		NVProperty prop;
+		
+ 		myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
+		myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
+	}
+#endif
+
 #ifdef TARGET_DISCO_L072CZ_LRWAN1
     radio = new SX1276Generic(NULL, MURATA_SX1276,
                               LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
@@ -158,7 +169,8 @@ int InitRadio()
                               LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
                               LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
 #endif
-    
+	
+
     statusIntf = new MyRadioStatus();
     securityIntf = new RadioSecurity();
     
