@@ -157,6 +157,7 @@ int SX1276PingPong()
         case SX1276MB1MAS:
             if (DEBUG_MESSAGE)
                 dprintf(" > Board Type: SX1276MB1LAS <");
+			break;
         case MURATA_SX1276:
             if (DEBUG_MESSAGE)
             	dprintf(" > Board Type: MURATA_SX1276_STM32L0 <");
