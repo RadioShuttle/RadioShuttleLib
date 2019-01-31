@@ -44,7 +44,7 @@ bool useNodeOffline = true;	// when idle turns the radio off and enters deelslee
 
 static const int myTempSensorApp = 0x0001;  // Must be unique world wide.
 #ifdef RADIO_SERVER
-int myDeviceID = 1,;
+int myDeviceID = 1;
 int remoteDeviceID = 14;
 uint32_t myCode = 0;
 #else
