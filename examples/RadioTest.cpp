@@ -30,30 +30,25 @@
  #define RADIO_SERVER	1
 #endif
 
-#ifdef RADIO_SERVER
-bool server = true;
-#else
-bool server = false;
-#endif
 
 bool usePassword = false;	// password the can used indepenend of AES
+bool server;				// automatically being set if radioTypeMode RadioShuttle::RS_Station_Basic
 bool useAES = false;		// AES needs the usePassword option on
-bool useNodeOffline = true;	// when idle turns the radio off and enters deelsleep
-
-
 
 static const int myTempSensorApp = 0x0001;  // Must be unique world wide.
 #ifdef RADIO_SERVER
 int myDeviceID = 1;
 int remoteDeviceID = 14;
 uint32_t myCode = 0;
+RadioShuttle::RadioType radioTypeMode = RadioShuttle::RS_Station_Basic;  // 1 = RS_Node_Offline, 3 = RS_Node_Online, 4 = RS_Station_Basic
 #else
 int myDeviceID = 14;
 int remoteDeviceID = 1;
 uint32_t myCode = 0;
+RadioShuttle::RadioType radioTypeMode = RadioShuttle::RS_Node_Offline;  // 1 = RS_Node_Offline, 3 = RS_Node_Online, 4 = RS_Station_Basic
 #endif
+const char *appPassword;
 
-unsigned char samplePassword[] = { "RadioShuttleFly" };
 
 /*
  * For details review: SX1276GenericLib/sx1276/sx1276.h
@@ -67,7 +62,7 @@ unsigned char samplePassword[] = { "RadioShuttleFly" };
  * Utilisation of these channels should not exceed 1% per hour per node
  * Bandwidth changes other than 125k requires different channels distances
  */
-const RadioShuttle::RadioProfile myProfile[] =  {
+RadioShuttle::RadioProfile myProfile[] =  {
     /*
      * Our default profile
      * frequency, bandwidth, TX power, spreading factor, frequency-offset
@@ -101,13 +96,15 @@ void TempSensorRecvHandler(int AppID, RadioShuttle::devid_t stationID, int msgID
 
         case RadioShuttle::MS_RecvData:			// a simple input message
             dprintf("MSG_RecvData ID: %d, len=%d", msgID, length);
-        {
-            struct sensor *p = (sensor *)buffer;
-            if (length == sizeof(struct sensor) && p->version == 1) {
-            	dprintf("ParticalData: PM10: %.1f (μg/m3)   PM2.5: %.1f (μg/m3)    ID: %d", (float)p->pm10 / 10.0, (float)p->pm25 / 10.0, p->id);
-            }
             // dump("MSG_RecvData", buffer, length);
-        }
+#ifdef PM_SENSOR
+        	{
+            	struct sensor *p = (sensor *)buffer;
+            	if (length == sizeof(struct sensor) && p->version == 1) {
+            		dprintf("ParticalData: PM10: %.1f (μg/m3)   PM2.5: %.1f (μg/m3)    ID: %d", (float)p->pm10 / 10.0, (float)p->pm25 / 10.0, p->id);
+            	}
+        	}
+#endif
             break;
         case RadioShuttle::MS_RecvDataConfirmed:	// received a confirmed message
             dprintf("MSG_RecvDataConfirmed ID: %d, len=%d", msgID, length);
@@ -146,14 +143,40 @@ int InitRadio()
     RSCode err;
     
 #ifdef  FEATURE_NVPROPERTY
-	{
-		NVProperty prop;
-		
- 		myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
-		myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
+	NVProperty prop;
+	int value;
+	
+	myDeviceID = prop.GetProperty(prop.LORA_DEVICE_ID, 0);
+	myCode = prop.GetProperty(prop.LORA_CODE_ID, 0);
+	if ((value = prop.GetProperty(prop.LORA_RADIO_TYPE, 0)) != 0)
+		radioTypeMode = (RadioShuttle::RadioType)value;
+	remoteDeviceID = 1;
+	
+	if (myDeviceID == 0 || myCode == 0 || radioTypeMode == 0) {
+		dprintf("LORA_DEVICE_ID or LORA_CODE_ID or LORA_RADIO_TYPE not set, use PropertyEditor to set this!");
+		return -1;
 	}
+	/*
+	 * Here are optional properties for custom settings
+	 */
+	if ((value = prop.GetProperty(prop.LORA_REMOTE_ID, 0)) != 0)
+		remoteDeviceID = value;
+	if ((value = prop.GetProperty(prop.LORA_FREQUENCY, 0)) != 0)
+		myProfile[0].Frequency = value;
+	if ((value = prop.GetProperty(prop.LORA_BANDWIDTH, 0)) != 0)
+		myProfile[0].Bandwidth = value;
+	if ((value = prop.GetProperty(prop.LORA_SPREADING_FACTOR, 0)) != 0)
+		myProfile[0].SpreadingFaktor = value;
+	if ((value = prop.GetProperty(prop.LORA_TXPOWER, 0)) != 0)
+		myProfile[0].TXPower = value;
+	if ((value = prop.GetProperty(prop.LORA_FREQUENCY_OFFSET, 0)) != 0)
+		myProfile[0].FrequencyOffset = value;
+	appPassword = prop.GetProperty(prop.LORA_APP_PWD, (const char *)NULL);
 #endif
 
+  if (radioTypeMode >= RadioShuttle::RS_Station_Basic)
+    server = true;
+	
 #ifdef TARGET_DISCO_L072CZ_LRWAN1
     radio = new SX1276Generic(NULL, MURATA_SX1276,
                               LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
@@ -191,26 +214,19 @@ int InitRadio()
     rs->AddRadioSecurity(securityIntf);
     CHECK_ERROR_RET("AddRadioSecurity", err);
     
-    /*
-     * The password parameter can be skipped if no password is required
-     */
-    if (usePassword) {
-        err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler, samplePassword, sizeof(samplePassword)-1);
-    } else {
-        err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler);
-        err = rs->RegisterApplication(10, &TempSensorRecvHandler);
-    }
-    if (err)
-        return err;
-    
+	/*
+	 * The password parameter can be NULL if no password is required
+   	 */
+	err = rs->RegisterApplication(myTempSensorApp, &TempSensorRecvHandler,  (void *)appPassword);
+	CHECK_ERROR_RET("RegisterApplication", err);
+	
     if (server) {
-        err = rs->Startup(RadioShuttle::RS_Station_Basic);
+	    // usually RadioShuttle::RS_Station_Basic, set via properties
+        err = rs->Startup(radioTypeMode);
         dprintf("Startup as a Server: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
     } else {
-        if (useNodeOffline)
-            err = rs->Startup(RadioShuttle::RS_Node_Offline);
-    	else
-            err = rs->Startup(RadioShuttle::RS_Node_Online);
+	    // usually RadioShuttle::RS_Node_Online or RadioShuttle, set via properties
+		err = rs->Startup(radioTypeMode);
         dprintf("Startup as a Node: %s ID=%d", rs->GetRadioName(rs->GetRadioType()), myDeviceID);
         if (!err && rs->AppRequiresAuthentication(myTempSensorApp) == RS_PasswordSet) {
             err = rs->Connect(myTempSensorApp, remoteDeviceID);
@@ -240,6 +256,9 @@ void DeInitRadio()
     }
 }
 
+/*
+ * this is a example basic loop for RadioShuttle
+ */
 int RadioTest()
 {
     extern volatile int pressedCount;
@@ -254,7 +273,7 @@ int RadioTest()
             if (cnt > 0) {
                 int flags = 0;
                 flags |= RadioShuttle::MF_NeedsConfirm;  // optional
-                if (usePassword && useAES)
+   				 if (useAES && appPassword)
                     flags |= RadioShuttle::MF_Encrypted;
                 if (server) {
                     static char msg[] = "The server feels very good today";
