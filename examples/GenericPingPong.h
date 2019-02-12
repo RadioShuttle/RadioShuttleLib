@@ -15,7 +15,7 @@ Maintainer: Miguel Luis and Gregory Cristian
 #ifndef __SX1276PINGPONG_H__
 #define __SX1276PINGPONG_H__
 
-#ifdef FEATURE_LORA
+#ifdef FEATURE_LORA_PING_PONG
  int SX1276PingPong(void);
 #else
  #define  SX1276PingPong(x)   void()

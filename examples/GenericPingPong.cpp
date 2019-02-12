@@ -10,7 +10,7 @@
 #include "sx1276-mbed-hal.h"
 #include "main.h"
 
-#ifdef FEATURE_LORA
+#ifdef FEATURE_LORA_PING_PONG
 
 /* Set this flag to '1' to display debug messages on the console */
 #define DEBUG_MESSAGE   1
