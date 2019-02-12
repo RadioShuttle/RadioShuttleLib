@@ -2,7 +2,7 @@
 #include "mbed.h"
 #include "PinMap.h"
 #include "GenericPingPong.h"
-#ifdef DEVICE_LOWPOWERTIMER
+#if defined(DEVICE_LPTICKER) || defined(DEVICE_LOWPOWERTIMER) // LOWPOWERTIMER in older mbed versions
 #define MyTimeout LowPowerTimeout
 #else
 #define MyTimeout Timeout
@@ -116,6 +116,11 @@ int SX1276PingPong()
     		LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
         	LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
         	LORA_ANT_RX, LORA_ANT_TX, LORA_ANT_BOOST, LORA_TCXO);
+#elif defined(HELTECL432_REV1)
+    Radio = new SX1276Generic(NULL, HELTEC_L4_1276,
+			LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+            LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
+			LORA_ANT_PWR);
 #else // RFM95
     Radio = new SX1276Generic(NULL, RFM95_SX1276,
 			LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,

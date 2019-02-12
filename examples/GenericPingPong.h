@@ -16,9 +16,9 @@ Maintainer: Miguel Luis and Gregory Cristian
 #define __SX1276PINGPONG_H__
 
 #ifdef FEATURE_LORA
-int SX1276PingPong(void);
+ int SX1276PingPong(void);
 #else
-#define  SX1276PingPong(x)   void()
+ #define  SX1276PingPong(x)   void()
 #endif
 /*
  * Callback functions prototypes
