@@ -349,4 +349,50 @@ void InitLoRaChipWithShutdown()
     }
 #endif
 }
+
+void RadioContinuesTX(void)
+{
+	Radio *radio;
+	
+#ifdef  FEATURE_NVPROPERTY
+	NVProperty prop;
+	int value;
+	
+	/*
+	 * Here are optional properties for custom settings
+	 */
+	if ((value = prop.GetProperty(prop.LORA_FREQUENCY, 0)) != 0)
+		myProfile[0].Frequency = value;
+	if ((value = prop.GetProperty(prop.LORA_TXPOWER, 0)) != 0)
+		myProfile[0].TXPower = value;
+#endif
+
+	
+#ifdef TARGET_DISCO_L072CZ_LRWAN1
+    radio = new SX1276Generic(NULL, MURATA_SX1276,
+                              LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+                              LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
+                              LORA_ANT_RX, LORA_ANT_TX, LORA_ANT_BOOST, LORA_TCXO);
+#elif defined(HELTECL432_REV1)
+    radio = new SX1276Generic(NULL, HELTEC_L4_1276,
+                              LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+                              LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5,
+                              LORA_ANT_PWR);
+#else // RFM95
+    radio = new SX1276Generic(NULL, RFM95_SX1276,
+                              LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
+                              LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
+#endif
+		if ((value = prop.GetProperty(prop.LORA_SPREADING_FACTOR, 0)) != 0)
+		myProfile[0].SpreadingFaktor = value;
+	
+	dprintf("RadioContinuesTX test, press reset to abort");
+	while(true) {
+		int secs = 1;
+		radio->SetTxContinuousWave(myProfile[0].Frequency, myProfile[0].TXPower, secs);
+		wait_ms(secs * 1000);
+		rprintf(".");
+	}
+}
+
 #endif // FEATURE_LORA
