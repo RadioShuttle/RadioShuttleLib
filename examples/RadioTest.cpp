@@ -17,7 +17,7 @@
 #endif
 
 
-#ifdef FEATURE_LORA
+#if defined(FEATURE_LORA) && defined(FEATURE_RADIOTEST)
 
 #define CHECK_ERROR_RET(func, err) { \
 	if (err) { \
@@ -34,6 +34,7 @@
 bool usePassword = false;	// password the can used indepenend of AES
 bool server;				// automatically being set if radioTypeMode RadioShuttle::RS_Station_Basic
 bool useAES = false;		// AES needs the usePassword option on
+const char *appPassword;
 
 static const int myTempSensorApp = 0x0001;  // Must be unique world wide.
 #ifdef RADIO_SERVER
@@ -47,7 +48,6 @@ int remoteDeviceID = 1;
 uint32_t myCode = 0;
 RadioShuttle::RadioType radioTypeMode = RadioShuttle::RS_Node_Offline;  // 1 = RS_Node_Offline, 3 = RS_Node_Online, 4 = RS_Station_Basic
 #endif
-const char *appPassword;
 
 
 /*
