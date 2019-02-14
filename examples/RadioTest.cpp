@@ -388,7 +388,7 @@ void RadioContinuesTX(void)
 	
 	dprintf("RadioContinuesTX test, press reset to abort");
 	while(true) {
-		int secs = 1;
+		int secs = 10;
 		radio->SetTxContinuousWave(myProfile[0].Frequency, myProfile[0].TXPower, secs);
 		wait_ms(secs * 1000);
 		rprintf(".");
