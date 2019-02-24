@@ -365,6 +365,8 @@ void RadioContinuesTX(void)
 		myProfile[0].Frequency = value;
 	if ((value = prop.GetProperty(prop.LORA_TXPOWER, 0)) != 0)
 		myProfile[0].TXPower = value;
+	if ((value = prop.GetProperty(prop.LORA_SPREADING_FACTOR, 0)) != 0)
+		myProfile[0].SpreadingFaktor = value;
 #endif
 
 	
@@ -383,8 +385,6 @@ void RadioContinuesTX(void)
                               LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,
                               LORA_DIO0, LORA_DIO1, LORA_DIO2, LORA_DIO3, LORA_DIO4, LORA_DIO5);
 #endif
-		if ((value = prop.GetProperty(prop.LORA_SPREADING_FACTOR, 0)) != 0)
-		myProfile[0].SpreadingFaktor = value;
 	
 	dprintf("RadioContinuesTX test, press reset to abort");
 	while(true) {
