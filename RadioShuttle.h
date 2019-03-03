@@ -198,8 +198,9 @@ public:
 
     /*
      * Starts the service with the specified RadioType
+	 * The optional deviceID allows to specify a custom ID, e.g. for failover.
      */
-    RSCode Startup(RadioType radioType);
+    RSCode Startup(RadioType radioType, devid_t deviceID = 0);
     
     /*
      * get the current radio type
