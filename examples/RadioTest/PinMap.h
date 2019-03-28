@@ -190,7 +190,8 @@
 #define FEATURE_LORA  1
 
 #define SW0           0               // no pullup, TODO check setup code
-#define LED           25               // 
+#define LED           25              //
+#define LED2          LED             //
 #define MYSERIAL      Serial          // this is a USB Serial, however the Feather M0 calls it only Serial.
 
 #define LORA_SPI_MOSI   MOSI          // MOSI 27 Heltec, 23 Arduino-Dev
