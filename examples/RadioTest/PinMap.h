@@ -5,7 +5,7 @@
  */
 #ifdef ARDUINO 
 #define RS_MAJOR    3
-#define RS_MINOR    3
+#define RS_MINOR    4
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
@@ -186,30 +186,55 @@
 
 #endif
 
-#elif defined(ARDUINO_Heltec_WIFI_LoRa_32)   // the Heltec Board
+#elif defined(ARDUINO_Heltec_WIFI_LoRa_32) \
+   || defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_WIFI_LORA_32_V2) \
+   || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE) // the Heltec boards
 #define FEATURE_LORA  1
 
+#ifdef defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE)
+ #define EXT_POWER_SW    Vext
+ #define EXT_POWER_ON    0
+ #define EXT_POWER_OFF   1
+#else
+ #define EXT_POWER_SW   NC
+#endif
+
 #define SW0           0               // no pullup, TODO check setup code
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
 #define LED           25              //
+#endif
 #define LED2          LED             //
 #define MYSERIAL      Serial          // this is a USB Serial, however the Feather M0 calls it only Serial.
 
 #define LORA_SPI_MOSI   MOSI          // MOSI 27 Heltec, 23 Arduino-Dev
 #define LORA_SPI_MISO   MISO          // MISO 19 Heltec, 19 Arduino-Dev
 #define LORA_SPI_SCLK   SCK           // SCK   5 Heltec, 18 Arduino-Dev
-#define LORA_CS         18            // LORA_DEFAULT_SS_PIN 
-#define LORA_RESET      14            // LORA_DEFAULT_RESET_PIN
-#define LORA_DIO0       26            // LORA_DEFAULT_DIO0_PIN
+#define LORA_CS         SS            // LORA_DEFAULT_SS_PIN
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+ #define LORA_RESET      14            // LORA_DEFAULT_RESET_PIN
+ #define LORA_DIO0       26            // LORA_DEFAULT_DIO0_PIN
+#else
+ #define LORA_RESET      RST_LoRa      // LORA_DEFAULT_RESET_PIN
+ #define LORA_DIO0       DIO0          // LORA_DEFAULT_DIO0_PIN
+#endif
 #define LORA_DIO1       NC            // Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
 #define LORA_DIO2       NC            // FhssChangeChannel when FreqHop is on, unused in RadioShuttle
 #define LORA_DIO3       NC            // used Cad Detection in RS_Node_Offline/Checking mode
 #define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
+#define LORA_ANT_PWR    EXT_POWER_SW // the analog switch is getting turned off go save energy
 
-#define DISPLAY_ADDRESS 0x3c
-#define DISPLAY_SDA     4
-#define DISPLAY_SCL     15
-#define DISPLAY_RESET   16
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+ #define DISPLAY_ADDRESS 0x3c
+ #define DISPLAY_SDA     4
+ #define DISPLAY_SCL     15
+ #define DISPLAY_RESET   16
+#elif defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK)
+ #define DISPLAY_ADDRESS 0x3c
+ #define DISPLAY_SDA     SDA_OLED
+ #define DISPLAY_SCL     SCL_OLED
+ #define DISPLAY_RESET   RST_OLED
+#endif
 
 #else 
 #error "unkown board"
