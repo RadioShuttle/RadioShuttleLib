@@ -71,7 +71,7 @@ MyRadioStatus::MyRadioStatus()
     ledRX = new DigitalOut(12);	// red
     *ledRX = 0;
 #endif
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
     invertedDisplay = false;
     _line1[0] = 0;
     _line2[0] = 0;
@@ -142,7 +142,7 @@ MyRadioStatus::TXStart(int AppID, int toStation, int length, int dBm)
         else
         	*ledTX = 1;
     }
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
     snprintf(_line2, sizeof(_line2), "TX(%d) ID(%d) %d dBm", length, toStation, dBm);
     UpdateDisplay(true);
 #endif
@@ -158,7 +158,7 @@ MyRadioStatus::TXComplete(void)
 		else
 			*ledTX = 0;
     }
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
 	UpdateDisplay(false);
 #endif
 }
@@ -176,7 +176,7 @@ MyRadioStatus::RxDone(int size, int rssi, int snr)
             *ledRX = 1;
     }
     _totalRX++;
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
     snprintf(_line3, sizeof(_line3), "RX(%d) RSSI(%d) SNR(%d)", size, rssi, snr);
     UpdateDisplay(true);
 #endif
@@ -191,7 +191,7 @@ MyRadioStatus::RxCompleted(void)
         else
         	*ledRX = 0;
     }
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
     UpdateDisplay(false);
 #endif
 }
@@ -204,7 +204,7 @@ MyRadioStatus::MessageTimeout(int App, int toStation)
     if (ledTimeout)
     	*ledTimeout = 1;
     _totalTimeout++;
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
     UpdateDisplay(false);
 #endif
 }
@@ -214,7 +214,7 @@ void
 MyRadioStatus::UpdateDisplay(bool invertDisplay)
 {
 	UNUSED(invertDisplay);
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
     int yoff = 0;
     int hight = 12;
     time_t t = time(NULL);

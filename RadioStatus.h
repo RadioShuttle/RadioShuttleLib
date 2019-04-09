@@ -4,7 +4,9 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#if defined(ARDUINO_Heltec_WIFI_LoRa_32) || defined(ARDUINO_WIFI_LORA_32) \
+	 || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) // the Heltec boards
+#define HAS_HELTEC_LoRa_DISPLAY
 #include <Wire.h>
 #include "SSD1306.h"
 #endif
@@ -36,7 +38,7 @@ private:
     int _totalTimeout;
     bool inverted;
     
-#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#ifdef HAS_HELTEC_LoRa_DISPLAY
     SSD1306 *display;
     DigitalOut *displayReset;
     char _line1[64];
