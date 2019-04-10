@@ -78,16 +78,19 @@ MyRadioStatus::MyRadioStatus()
     _line3[0] = 0;
     _line4[0] = 0;
     _line5[0] = 0;
-    
-#define DISPLAY_ADDRESS 0x3c
-#define DISPLAY_SDA     4
-#define DISPLAY_SCL     15
+#ifndef DISPLAY_ADDRESS
+ #define DISPLAY_ADDRESS 0x3c
+ #define DISPLAY_SDA     4
+ #define DISPLAY_SCL     15
+#endif
+#ifdef DISPLAY_RESET
 #define DISPLAY_RESET   16    
     displayReset = new DigitalOut(DISPLAY_RESET);
-    display = new SSD1306(DISPLAY_ADDRESS, DISPLAY_SDA, DISPLAY_SCL);
+#endif
     *displayReset = 0;
     wait_ms(50);
     *displayReset = 1;
+    display = new SSD1306(DISPLAY_ADDRESS, DISPLAY_SDA, DISPLAY_SCL);
     display->init();
     // display->flipScreenVertically();
     display->setFont(ArialMT_Plain_16); // ArialMT_Plain_10);

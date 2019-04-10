@@ -10,6 +10,11 @@
 #include <Wire.h>
 #include "SSD1306.h"
 #endif
+#ifdef FEATURE_SSD1306
+#include "SSD1306I2C.h"
+#define HAS_HELTEC_LoRa_DISPLAY
+#define SSD1306 SSD1306I2C
+#endif
 
 #ifndef UNUSED
  #define UNUSED(x) (void)(x)
