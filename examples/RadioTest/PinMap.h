@@ -83,6 +83,10 @@
 // #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 // #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
+#define DISPLAY_SDA     PIN_WIRE_SDA
+#define DISPLAY_SCL     PIN_WIRE_SCL
+#define DISPLAY_ADDRESS 0x3c
+
 #elif defined (D21_LONGRA_REV_750)
 
 #define SW0       		12              // PA19 switch needs pullup
@@ -107,6 +111,10 @@
 #define BAT_MESURE_EN   45            // Opptional turn for measurement PA31/SWD
 #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
+
+#define DISPLAY_SDA     SDA
+#define DISPLAY_SCL     SCL
+#define DISPLAY_ADDRESS 0x3c
 
 #elif defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 
@@ -177,6 +185,10 @@
 #define BAT_MESURE_EN   EXT_POWER_SW  // Turn power on for messurement
 #define BAT_MESURE_ADC  35            // Analog-in for batterie measurement
 #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
+
+#define DISPLAY_SDA     SDA
+#define DISPLAY_SCL     SCL
+#define DISPLAY_ADDRESS 0x3c
 
 #else
 
