@@ -71,25 +71,39 @@ MyRadioStatus::MyRadioStatus()
     ledRX = new DigitalOut(12);	// red
     *ledRX = 0;
 #endif
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#if defined(ARDUINO_Heltec_WIFI_LoRa_32) || defined(ARDUINO_WIFI_LORA_32) \
+	 || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) \
+	 || defined(ARDUINO_WIRELESS_STICK_LITE) // the Heltec boards
+    ledTX = new DigitalOut(25); 	// white
+    *ledTX = 0;
+#endif
+
+#ifdef HAS_OLED_DISPLAY
     invertedDisplay = false;
     _line1[0] = 0;
     _line2[0] = 0;
     _line3[0] = 0;
     _line4[0] = 0;
     _line5[0] = 0;
-#ifndef DISPLAY_ADDRESS
+	displayReset = NULL;
+#if defined(ARDUINO_Heltec_WIFI_LoRa_32) || defined(ARDUINO_WIFI_LORA_32) \
+	 || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK)
  #define DISPLAY_ADDRESS 0x3c
  #define DISPLAY_SDA     4
  #define DISPLAY_SCL     15
-#endif
-#ifdef DISPLAY_RESET
-#define DISPLAY_RESET   16    
+ #define DISPLAY_RESET   16
     displayReset = new DigitalOut(DISPLAY_RESET);
 #endif
-    *displayReset = 0;
-    wait_ms(50);
-    *displayReset = 1;
+#ifdef ARDUINO_ESP32_DEV // ESP32_ECO_POWER_REV_1
+ #define DISPLAY_ADDRESS 0x3c
+ #define DISPLAY_SDA     21
+ #define DISPLAY_SCL     22
+#endif
+	if (displayReset) {
+		*displayReset = 0;
+    	wait_ms(50);
+    	*displayReset = 1;
+	}
     display = new SSD1306(DISPLAY_ADDRESS, DISPLAY_SDA, DISPLAY_SCL);
     display->init();
     // display->flipScreenVertically();
@@ -145,7 +159,7 @@ MyRadioStatus::TXStart(int AppID, int toStation, int length, int dBm)
         else
         	*ledTX = 1;
     }
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#ifdef HAS_OLED_DISPLAY
     snprintf(_line2, sizeof(_line2), "TX(%d) ID(%d) %d dBm", length, toStation, dBm);
     UpdateDisplay(true);
 #endif
@@ -161,7 +175,7 @@ MyRadioStatus::TXComplete(void)
 		else
 			*ledTX = 0;
     }
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#ifdef HAS_OLED_DISPLAY
 	UpdateDisplay(false);
 #endif
 }
@@ -179,7 +193,7 @@ MyRadioStatus::RxDone(int size, int rssi, int snr)
             *ledRX = 1;
     }
     _totalRX++;
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#ifdef HAS_OLED_DISPLAY
     snprintf(_line3, sizeof(_line3), "RX(%d) RSSI(%d) SNR(%d)", size, rssi, snr);
     UpdateDisplay(true);
 #endif
@@ -194,7 +208,7 @@ MyRadioStatus::RxCompleted(void)
         else
         	*ledRX = 0;
     }
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#ifdef HAS_OLED_DISPLAY
     UpdateDisplay(false);
 #endif
 }
@@ -207,7 +221,7 @@ MyRadioStatus::MessageTimeout(int App, int toStation)
     if (ledTimeout)
     	*ledTimeout = 1;
     _totalTimeout++;
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#ifdef HAS_OLED_DISPLAY
     UpdateDisplay(false);
 #endif
 }
@@ -217,7 +231,7 @@ void
 MyRadioStatus::UpdateDisplay(bool invertDisplay)
 {
 	UNUSED(invertDisplay);
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#ifdef HAS_OLED_DISPLAY
     int yoff = 0;
     int hight = 12;
     time_t t = time(NULL);

@@ -5,14 +5,20 @@
  */
 
 #if defined(ARDUINO_Heltec_WIFI_LoRa_32) || defined(ARDUINO_WIFI_LORA_32) \
-	 || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) // the Heltec boards
-#define HAS_HELTEC_LoRa_DISPLAY
+	 || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) \
+	 || defined(ARDUINO_ESP32_DEV) // the Heltec and ECO boards
+#define HAS_OLED_DISPLAY
 #include <Wire.h>
 #include "SSD1306.h"
 #endif
+
+#ifdef ARDUINO_ESP32_DEV
+#undef HAS_OLED_DISPLAY // remove this line to enable the board
+#endif
+
 #ifdef FEATURE_SSD1306
 #include "SSD1306I2C.h"
-#define HAS_HELTEC_LoRa_DISPLAY
+#define HAS_OLED_DISPLAY
 #define SSD1306 SSD1306I2C
 #endif
 
@@ -43,7 +49,7 @@ private:
     int _totalTimeout;
     bool inverted;
     
-#ifdef HAS_HELTEC_LoRa_DISPLAY
+#ifdef HAS_OLED_DISPLAY
     SSD1306 *display;
     DigitalOut *displayReset;
     char _line1[64];
