@@ -14,6 +14,7 @@
 #elif ARDUINO_ARCH_ESP32
 #include <rom/rtc.h>
 #include <driver/adc.h>
+#include <NTPUpdate.h>
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
  #include <Wire.h>
 #endif
@@ -193,12 +194,14 @@ float GetBatteryVoltage()
 RTC_DATA_ATTR int bootCount = 0;
 RTC_DATA_ATTR bool hasSensor;
 
+void RTCUpdateHandler(void);
 
 void RTCInit(const char *date, const char *timestr)
 {
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
   Wire.begin();
 #endif
+  NTPUpdate ntp;
 
   time_t now = time(NULL);
   
@@ -208,7 +211,9 @@ void RTCInit(const char *date, const char *timestr)
   DS3231_get(&ds);
   if (!now || now < ds.unixtime || now > ds.unixtime) {
     time_t t = cvt_date(date, timestr);
-    if (!ds.unixtime || t > ds.unixtime) {
+    t -= (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t)); // convert to UTC
+
+    if (!ds.unixtime || t > ds.unixtime ) {
       struct tm *tmp = gmtime(&t);
       ds.sec = tmp->tm_sec;
       ds.min = tmp->tm_min;
@@ -231,24 +236,28 @@ void RTCInit(const char *date, const char *timestr)
     tv.tv_sec = ds.unixtime;
     struct timezone tz;
     memset(&tz, 0, sizeof(tz));
-    tz.tz_minuteswest = 0;
-    tz.tz_dsttime = 0;
-    settimeofday(&tv, &tz);    
-    dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
+    tz.tz_minuteswest = (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t)/60);
+    tz.tz_dsttime = 1;
+    ntp.SetTimeZone(tv.tv_sec);
+    settimeofday(&tv, &tz);
+    dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d UTC", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
   }
   int i = prop.GetProperty(prop.RTC_AGING_CAL, 0);
   if (i && i != DS3231_get_aging())
     DS3231_set_aging(i);
+  ntp.SetRTCUpdateProc(&RTCUpdateHandler);
 #else // without ds3231
   if (!now) {
     time_t t = cvt_date(date, timestr);
+    t -= (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t)); // convert to UTC
     struct timeval tv;
     memset(&tv, 0, sizeof(tv));
     tv.tv_sec = t;
     struct timezone tz;
     memset(&tz, 0, sizeof(tz));
-    tz.tz_minuteswest = 0;
-    tz.tz_dsttime = 0;
+    tz.tz_minuteswest = (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t))/60;
+    tz.tz_dsttime = 1;
+    ntp.SetTimeZone(tv.tv_sec);
     settimeofday(&tv, &tz);
   }
 #endif
@@ -297,9 +306,30 @@ void RTCInit(const char *date, const char *timestr)
   }
 }
 
+void
+RTCUpdateHandler(void)
+{
+  /*
+   * will be called when the RTCUpdate issues an update.
+   */
+#ifdef FEATURE_RTC_DS3231
+  time_t t = time(NULL);
+  struct ts ds;
+  struct tm *tmp = gmtime(&t);
+  ds.sec = tmp->tm_sec;
+  ds.min = tmp->tm_min;
+  ds.hour = tmp->tm_hour;
+  ds.wday = tmp->tm_wday;
+  ds.mday = tmp->tm_mday;
+  ds.mon = tmp->tm_mon + 1;
+  ds.year =  tmp->tm_year + 1900;
+  DS3231_set(ds);
+  dprintf("RTC update issued");
+#endif
+}
+
 #else
 #error "Unkown platform"
 #endif
 #endif // FEATURE_LORA
 #endif // ARDUINO 
-
