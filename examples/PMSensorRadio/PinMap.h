@@ -5,45 +5,45 @@
  */
 #ifdef ARDUINO 
 #define RS_MAJOR    3
-#define RS_MINOR    1
+#define RS_MINOR    5
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
-#define FEATURE_LORA  1
+#define FEATURE_LORA	1
 
-#define SW0       3   // switch needs pullup.
+#define	SW0				3		// switch needs pullup.
 #define LED       LED_BUILTIN
 
 #define MYSERIAL          Serial
 
-#define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA06 
-#define LORA_SPI_MISO   PIN_SPI_MISO  // PA04
-#define LORA_SPI_SCLK   PIN_SPI_SCK   // PA07
-#define LORA_CS         PIN_SPI_SS    // PA05
-#define LORA_RESET      PIN_A0        // PB00
-#define LORA_DIO0       PIN_A1        // PB01 used for Rx, Tx Interrupt   
-#define LORA_DIO1       PIN_A2        // PA10 Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
-#define LORA_DIO2       PIN_A3        // PA11 FhssChangeChannel when FreqHop is on (unused in RadioShuttle)
-#define LORA_DIO3       PIN_A4        // PA02 used Cad Detection in RS_Node_Offline/Checking mode
+#define LORA_SPI_MOSI   PIN_SPI_MOSI	// PA06 
+#define LORA_SPI_MISO   PIN_SPI_MISO	// PA04
+#define LORA_SPI_SCLK   PIN_SPI_SCK		// PA07
+#define LORA_CS			    PIN_SPI_SS		// PA05
+#define LORA_RESET      PIN_A0				// PB00
+#define LORA_DIO0       PIN_A1	      // PB01 used for Rx, Tx Interrupt 	
+#define LORA_DIO1       PIN_A2	  		// PA10 Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
+#define LORA_DIO2       PIN_A3	      // PA11 FhssChangeChannel when FreqHop is on (unused in RadioShuttle)
+#define LORA_DIO3       PIN_A4	      // PA02 used Cad Detection in RS_Node_Offline/Checking mode
 #define LORA_DIO4       PIN_A5        // PA03 FSK mode preamble detected, unused in RadioShuttle
-#define LORA_DIO5       NC            // NC   FSK mode ready / ClockOut, unused in RadioShuttle
+#define LORA_DIO5       NC		        // NC   FSK mode ready / ClockOut, unused in RadioShuttle
 
 #elif __SAMD21G18A__ // Zero
 #define FEATURE_LORA  1
 
-// #define D21_LONGRA_REV_200  1    // board with Lipo power supply/charger, mini USB
-// #define D21_LONGRA_REV_301  1    // board with Lipo power supply/charger, micro USB
-// #define D21_LONGRA_REV_630  1    // board with Lipo power supply/charger, micro USB
-#define D21_LONGRA_REV_720  1   // Maker Faire Hannover revision, micro USB
-// #define D21_LONGRA_REV_750  1    // LongRa revision with more pins, micro USB
+// #define D21_LONGRA_REV_200  1		// board with Lipo power supply/charger, mini USB
+// #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
+// #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
+#define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
+// #define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
 
 
 
 #if defined(D21_LONGRA_REV_301) || defined(D21_LONGRA_REV_200)
 
-#define SW0           1   // switch needs pullup.
-#define LED           0
-#define MYSERIAL      SerialUSB
+#define SW0      		  1   // switch needs pullup.
+#define LED       		0
+#define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA06?
 #define LORA_SPI_MISO   PIN_SPI_MISO  // PA04?
@@ -59,9 +59,9 @@
 
 #elif defined (D21_LONGRA_REV_630) || defined (D21_LONGRA_REV_720)
 
-#define SW0           12              // PA19 switch needs pullup
-#define LED           LED_BUILTIN     // PA17
-#define MYSERIAL      SerialUSB
+#define SW0       		12              // PA19 switch needs pullup
+#define LED       		LED_BUILTIN     // PA17
+#define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PB10
 #define LORA_SPI_MISO   PIN_SPI_MISO  // PA12
@@ -83,11 +83,15 @@
 // #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 // #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
+#define DISPLAY_SDA     PIN_WIRE_SDA
+#define DISPLAY_SCL     PIN_WIRE_SCL
+#define DISPLAY_ADDRESS 0x3c
+
 #elif defined (D21_LONGRA_REV_750)
 
-#define SW0           12              // PA19 switch needs pullup
-#define LED           LED_BUILTIN     // PA17
-#define MYSERIAL      SerialUSB
+#define SW0       		12              // PA19 switch needs pullup
+#define LED       		LED_BUILTIN     // PA17
+#define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PB10
 #define LORA_SPI_MISO   PIN_SPI_MISO  // PA12
@@ -107,6 +111,10 @@
 #define BAT_MESURE_EN   45            // Opptional turn for measurement PA31/SWD
 #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
+
+#define DISPLAY_SDA     SDA
+#define DISPLAY_SCL     SCL
+#define DISPLAY_ADDRESS 0x3c
 
 #elif defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 
@@ -178,6 +186,10 @@
 #define BAT_MESURE_ADC  35            // Analog-in for batterie measurement
 #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
 
+#define DISPLAY_SDA     SDA
+#define DISPLAY_SCL     SCL
+#define DISPLAY_ADDRESS 0x3c
+
 #else
 
 #define SW0           0               // no pullup
@@ -186,33 +198,58 @@
 
 #endif
 
-#elif defined(ARDUINO_Heltec_WIFI_LoRa_32)   // the Heltec Board
+#elif defined(ARDUINO_Heltec_WIFI_LoRa_32) \
+   || defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_WIFI_LORA_32_V2) \
+   || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE) // the Heltec boards
 #define FEATURE_LORA  1
 
+#ifdef defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE)
+ #define EXT_POWER_SW    Vext
+ #define EXT_POWER_ON    0
+ #define EXT_POWER_OFF   1
+#else
+ #define EXT_POWER_SW   NC
+#endif
+
 #define SW0           0               // no pullup, TODO check setup code
-#define LED           25               // 
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+#define LED           25              //
+#endif
+#define LED2          LED             //
 #define MYSERIAL      Serial          // this is a USB Serial, however the Feather M0 calls it only Serial.
 
 #define LORA_SPI_MOSI   MOSI          // MOSI 27 Heltec, 23 Arduino-Dev
 #define LORA_SPI_MISO   MISO          // MISO 19 Heltec, 19 Arduino-Dev
 #define LORA_SPI_SCLK   SCK           // SCK   5 Heltec, 18 Arduino-Dev
-#define LORA_CS         18            // LORA_DEFAULT_SS_PIN 
-#define LORA_RESET      14            // LORA_DEFAULT_RESET_PIN
-#define LORA_DIO0       26            // LORA_DEFAULT_DIO0_PIN
+#define LORA_CS         SS            // LORA_DEFAULT_SS_PIN
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+ #define LORA_RESET      14            // LORA_DEFAULT_RESET_PIN
+ #define LORA_DIO0       26            // LORA_DEFAULT_DIO0_PIN
+#else
+ #define LORA_RESET      RST_LoRa      // LORA_DEFAULT_RESET_PIN
+ #define LORA_DIO0       DIO0          // LORA_DEFAULT_DIO0_PIN
+#endif
 #define LORA_DIO1       NC            // Fifo Level/Full, RxTimeout/Cad Detection Interrupt, unused in RadioShuttle
 #define LORA_DIO2       NC            // FhssChangeChannel when FreqHop is on, unused in RadioShuttle
 #define LORA_DIO3       NC            // used Cad Detection in RS_Node_Offline/Checking mode
 #define LORA_DIO4       NC            // FSK mode preamble detected, unused in RadioShuttle
 #define LORA_DIO5       NC            // FSK mode ready / ClockOut, unused in RadioShuttle
+#define LORA_ANT_PWR    EXT_POWER_SW // the analog switch is getting turned off go save energy
 
-#define DISPLAY_ADDRESS 0x3c
-#define DISPLAY_SDA     4
-#define DISPLAY_SCL     15
-#define DISPLAY_RESET   16
+#ifdef ARDUINO_Heltec_WIFI_LoRa_32
+ #define DISPLAY_ADDRESS 0x3c
+ #define DISPLAY_SDA     4
+ #define DISPLAY_SCL     15
+ #define DISPLAY_RESET   16
+#elif defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK)
+ #define DISPLAY_ADDRESS 0x3c
+ #define DISPLAY_SDA     SDA_OLED
+ #define DISPLAY_SCL     SCL_OLED
+ #define DISPLAY_RESET   RST_OLED
+#endif
 
 #else 
 #error "unkown board"
 #endif
 
 #endif // Arduino
-
