@@ -7,10 +7,10 @@
 #ifdef ARDUINO_ARCH_ESP32
 #define SERIALTYPE  HardwareSerial
 #define PMSerial    Serial
-#elif BOARD_REV_720
+#elif defined(D21_LONGRA_REV_720) || defined(D21_LONGRA_REV_750)
 #define SERIALTYPE  Uart
 #define PMSerial    Serial1
-#elif
+#else
 #error "Unkown Board"
 #endif
 
