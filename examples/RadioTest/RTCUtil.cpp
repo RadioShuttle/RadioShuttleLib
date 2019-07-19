@@ -144,6 +144,9 @@ void RTCInit(const char *date, const char *timestr)
 #ifdef BAT_MESURE_ADC
   GetBatteryVoltage();
 #endif
+  /*
+   * the default is 32 secs, at present it cannot be changed.
+   */
   InitWatchDog();
 }
 
@@ -304,6 +307,11 @@ void RTCInit(const char *date, const char *timestr)
      }
 #endif
   }
+  /*
+   * the default of two minutes should be fine for networking hangs,  etc.
+   * specify optional parameter in ms e.g.:(120 * 1000) 
+   */
+  InitWatchDog(); 
 }
 
 void
