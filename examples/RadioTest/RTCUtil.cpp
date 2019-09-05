@@ -55,7 +55,7 @@ bool ESP32DeepsleepWakeup;
 #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)
 
 #ifdef BAT_MESURE_ADC
-float GetBatteryVoltage(void)
+float GetBatteryVoltage(bool print)
 {
 #ifdef D21_LONGRA_REV_750
   if (DSU->STATUSB.bit.DBGPRES) // skip this when the debugger uses the SWD pin
@@ -84,7 +84,8 @@ float GetBatteryVoltage(void)
   float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
   volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
 
-  dprintf("Power: %s (ADC: %d Vref: %s)", String(volt).c_str(), (int)adcValue, String(vref, 3).c_str()); 
+  if (print)
+    dprintf("Power: %s (ADC: %d Vref: %s)", String(volt).c_str(), (int)adcValue, String(vref, 3).c_str()); 
 
 #ifdef BAT_MESURE_EN
   DigitalIn swdin2(BAT_MESURE_EN);
@@ -157,7 +158,7 @@ Adafruit_Si7021 *sensorSI7021;
 #endif
 
 #ifdef ESP32_ECO_POWER_REV_1
-float GetBatteryVoltage()
+float GetBatteryVoltage(bool print)
 {
 #ifdef BAT_MESURE_EN
   DigitalOut extPWR(BAT_MESURE_EN);
@@ -180,9 +181,10 @@ float GetBatteryVoltage()
 
   float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
   volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
-  
   volt -= 0.065; // correction in millivolts
-  dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, (int)adcValue, vref); 
+  
+  if (print)
+    dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, (int)adcValue, vref); 
 
 #ifdef BAT_MESURE_EN
   extPWR = EXT_POWER_OFF; 
