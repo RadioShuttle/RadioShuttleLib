@@ -153,6 +153,8 @@ void RTCInit(const char *date, const char *timestr)
 
 #elif ARDUINO_ARCH_ESP32 
 
+uint64_t ESP32WakeupGPIOStatus;
+
 #ifdef FEATURE_SI7021
 Adafruit_Si7021 *sensorSI7021;  
 #endif
@@ -160,15 +162,16 @@ Adafruit_Si7021 *sensorSI7021;
 #ifdef ESP32_ECO_POWER_REV_1
 float GetBatteryVoltage(bool print)
 {
-#ifdef BAT_MESURE_EN
-  DigitalOut extPWR(BAT_MESURE_EN);
-  extPWR = EXT_POWER_ON;
-#endif
   int adcBits = 12;
   int adcSampleCount = 12;
   float volt = 0;
   float vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
 
+ #ifdef BAT_MESURE_EN
+  DigitalOut extPWR(BAT_MESURE_EN);
+  extPWR = EXT_POWER_ON;
+#endif
+  
   analogReadResolution(adcBits);
   analogSetPinAttenuation(BAT_MESURE_ADC, ADC_0db); //  1.124 Volt ID 132, 
   
@@ -176,6 +179,13 @@ float GetBatteryVoltage(bool print)
   for (int i = 0; i < adcSampleCount; i++) {
     adcValue += analogRead(BAT_MESURE_ADC); // BAT_MESURE_ADC is ADC1
   }
+
+#ifdef BAT_MESURE_EN
+  extPWR = EXT_POWER_OFF; 
+  DigitalIn tmpPWR(BAT_MESURE_EN);
+  tmpPWR.mode(PullUp); // turn off the power, PullUp will keep it off in deepsleep
+#endif  
+  
   adcValue /= (float)adcSampleCount;
   adcValue += 0.5; // for proper rounding.
 
@@ -185,12 +195,6 @@ float GetBatteryVoltage(bool print)
   
   if (print)
     dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, (int)adcValue, vref); 
-
-#ifdef BAT_MESURE_EN
-  extPWR = EXT_POWER_OFF; 
-  DigitalIn tmpPWR(BAT_MESURE_EN);
-  tmpPWR.mode(PullUp); // turn off the power, PullUp will keep it off in deepsleep
-#endif
   return volt;
 }
 
@@ -267,6 +271,7 @@ void RTCInit(const char *date, const char *timestr)
   }
 #endif
 
+  ESP32WakeupGPIOStatus = ESP32WakeupGPIOStatusLow | ESP32WakeupGPIOStatusHigh << 32;
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   if (wakeup_reason)
     dprintf("Boot: %s (bootCount: %d)", ESP32WakeUpReason(wakeup_reason), ++bootCount);
