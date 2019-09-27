@@ -34,8 +34,8 @@
 // #define D21_LONGRA_REV_200  1		// board with Lipo power supply/charger, mini USB
 // #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
-#define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
-// #define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
+// #define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
+#define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
 
 
 
@@ -43,6 +43,7 @@
 
 #define SW0      		  1   // switch needs pullup.
 #define LED       		0
+#define LED2          LED
 #define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA06?
@@ -78,7 +79,8 @@
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
-// For LongRa 7.2 new resistors are required before the following can be enabled
+#define EXT_POWER_ON    0
+#define EXT_POWER_OFF   1// For LongRa 7.2 new resistors are required before the following can be enabled
 // #define BAT_MESURE_EN   27            // Optional: turn for measurement PA28
 // #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 // #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
@@ -91,6 +93,7 @@
 
 #define SW0       		12              // PA19 switch needs pullup
 #define LED       		LED_BUILTIN     // PA17
+#define LED2          LED
 #define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PB10
@@ -108,6 +111,8 @@
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
+#define EXT_POWER_ON    0
+#define EXT_POWER_OFF   1
 #define BAT_MESURE_EN   45            // Opptional turn for measurement PA31/SWD
 #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
@@ -120,6 +125,7 @@
 
 #define SW0           12              // switch needs pullup, must be conected to the headers
 #define LED           LED_BUILTIN     // 13
+#define LED2          LED
 #define MYSERIAL      Serial          // this is a USB Serial, however the Feather M0 calls it only Serial.
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA12
