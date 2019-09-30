@@ -271,7 +271,7 @@ void RTCInit(const char *date, const char *timestr)
   }
 #endif
 
-  ESP32WakeupGPIOStatus = ESP32WakeupGPIOStatusLow | ESP32WakeupGPIOStatusHigh << 32;
+  ESP32WakeupGPIOStatus = ESP32WakeupGPIOStatusLow | (uint64_t) ESP32WakeupGPIOStatusHigh << 32;
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   if (wakeup_reason)
     dprintf("Boot: %s (bootCount: %d)", ESP32WakeUpReason(wakeup_reason), ++bootCount);
