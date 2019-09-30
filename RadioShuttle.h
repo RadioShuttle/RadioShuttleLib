@@ -286,7 +286,7 @@ public:
     /*
      * The RadioShuttle is idle when there are no ongoing jobs, etc.
      */
-    bool Idle(void);
+    bool Idle(boolean forceBusyDuringTransmits = false);
     
     /*
      * Converts a RadioShuttle error code into a string.
