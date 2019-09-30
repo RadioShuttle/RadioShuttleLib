@@ -173,8 +173,11 @@ public:
     /*
      * Adds a new radio with a given profile
      * Optional profile, must be called before startup
+	 * The retry delay allows to to specify a custom retry value (e.g. 4000 for 4 secs)
+	 * The default retry delay is the MAX MTU transfer time for a given spreading factor
+	 * plus some random time to avoid collisions.
      */
-    RSCode AddRadio(Radio *radio, RadioModems_t modem, const struct RadioProfile *profile = NULL);
+    RSCode AddRadio(Radio *radio, RadioModems_t modem, const struct RadioProfile *profile = NULL, int customRetryDelay_ms = 0);
     
     /*
      * This allows to swtich between RS_Node_Offline and RS_Node_Online
@@ -339,6 +342,7 @@ private:
         struct RadioStats rStats;
         int maxTimeOnAir;
         int retry_ms;
+        int customRetryDelay_ms;
         uint32_t lastTxDone;
         volatile bool txDoneReceived;
         volatile const char *intrDelayedMsg;
