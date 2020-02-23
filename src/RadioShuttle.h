@@ -52,6 +52,7 @@ using namespace std;
 
 typedef enum RSErrorCode {
     RS_NoErr    = 0,
+    RS_InvalidProductCode = 1,			// license does not match
     RS_DuplicateAppID,
     RS_AppID_NotFound,
     RS_StationNotConnected,
@@ -64,7 +65,6 @@ typedef enum RSErrorCode {
     RS_RadioNotFound,				// The specified radio is not available
     RS_UnknownModemType,            // No FSK no LoRa modem type
     RS_MessageSizeExceeded,			// Message size too long
-    RS_InvalidProductCode,			// license does not match
     RS_InvalidParam,				// invalid parameter.
     RS_OutOfMemory,					// unable to allocate memory
 } RSCode;
@@ -97,7 +97,7 @@ public:
     };
     
     typedef void (*AppRecvHandler)(int AppID, devid_t stationID, int msgID, int status, void *data, int length);
-
+	typedef void (*AppStartupHandler)(void *context);
 
     enum MsgStatus {
         MS_SentCompleted,			// A previous SendMsg has been sent
@@ -289,7 +289,7 @@ public:
     /*
      * The RadioShuttle is idle when there are no ongoing jobs, etc.
      */
-    bool Idle(boolean forceBusyDuringTransmits = false);
+    bool Idle(bool forceBusyDuringTransmits = false);
     
     /*
      * Converts a RadioShuttle error code into a string.
@@ -561,8 +561,6 @@ private:
 private:
     const char *_name;
     devid_t _deviceID;
-    devid_t _tmpdeviceID;
-    uint8_t _uuid[16];
     RadioType _radioType;
     int _maxMTUSize;
     list<RadioEntry> _radios;
@@ -584,7 +582,8 @@ private:
     const static int RX_TIMEOUT_1HOUR	= 3600000;
     RadioStatusInterface *_statusIntf;
     RadioSecurityInterface *_securityIntf;
-    uint32_t _;
+    AppStartupHandler _startupHandler;
+    AppStartupHandler _receiveHandler;
 };
 
 #endif // __RADIOSHUTTLE_H__
