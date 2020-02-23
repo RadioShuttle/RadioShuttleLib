@@ -24,7 +24,7 @@ The easiest is to get a pair of the RadioShuttle supported boards to test the pr
 
 
 ## Supported radio drivers
-The library depends on a common radio driver. At present the SX1276GenericLib has been used:
+The library depends on a common radio driver. At present the SX1276GenericLib is been used:
 - https://github.com/RadioShuttle/SX1276GenericLib
 Custom radio drivers for other radio chipsets can be developed when useing the same radio API as the SX1276GenericLib driver.
 
