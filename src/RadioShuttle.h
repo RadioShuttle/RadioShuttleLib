@@ -1,5 +1,5 @@
 /*
- * This is an unpublished work copyright
+ * This is work copyright
  * (c) 2019 Helmut Tschemernjak
  * 30826 Garbsen (Hannover) Germany
  *
