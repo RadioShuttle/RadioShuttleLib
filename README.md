@@ -26,7 +26,7 @@ The easiest way to test the protocol is to get a pair of the RadioShuttle suppor
 ## Supported radio drivers
 The library depends on a common radio driver. At present, the SX1276GenericLib is used:
 - https://github.com/RadioShuttle/SX1276GenericLib
-Custom radio drivers for other radio chipsets can be developed when useing the same radio API as the SX1276GenericLib driver.
+Custom radio drivers for other radio chipsets can be developed when using the same radio API as the SX1276GenericLib driver.
 
 
 ## TODOs
