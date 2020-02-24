@@ -14,7 +14,7 @@ www.radioshuttle.de
 
 
 ## Prerequisites for testing the RadioShuttle protocol
-The easiest way to test the protocol is to get a pair of the RadioShuttle supported boards. The solution includes hardware and software ready to go. Everyone (even non programmers) should be able to get example applications up and running. See details on www.radioshuttle.de
+The easiest way to test the protocol is to get a pair of the RadioShuttle supported boards. The solution includes hardware and software ready to go. Everyone (even non-programmers) should be able to get example applications up and running. See details on www.radioshuttle.de
 
 ## Supported platforms
 - Mbed OS (STM32L4, STM32L0 )
@@ -42,9 +42,9 @@ This protocol implementation has initially been written by the RadioShuttle engi
 
 
 ## Links
-- RadioShuttle Web Site: https://www.radioshuttle.de/
-- The RadioShuttle Wireless Protocol: https://www.radioshuttle.de/en/radioshuttle-en/protocol/
+- RadioShuttle website: https://www.radioshuttle.de/
+- The RadioShuttle wireless protocol: https://www.radioshuttle.de/en/radioshuttle-en/protocol/
 - LoRa basics: https://www.radioshuttle.de/en/lora-en/basics/
 - MQTT basics: https://www.radioshuttle.de/en/mqtt-en/the-basics/
-- MQTT Push Client (App) https://www.radioshuttle.de/en/mqtt-en/mqtt-push-client-app/
+- MQTT Push Client (app) https://www.radioshuttle.de/en/mqtt-en/mqtt-push-client-app/
 - Supported radio chips: https://github.com/RadioShuttle/SX1276GenericLib
