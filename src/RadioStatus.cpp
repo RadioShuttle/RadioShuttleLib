@@ -101,7 +101,7 @@ MyRadioStatus::MyRadioStatus()
 #endif
 	if (displayReset) {
 		*displayReset = 0;
-    	wait_ms(50);
+    	wait_us(50 * 1000);
     	*displayReset = 1;
 	}
     display = new SSD1306(DISPLAY_ADDRESS, DISPLAY_SDA, DISPLAY_SCL);

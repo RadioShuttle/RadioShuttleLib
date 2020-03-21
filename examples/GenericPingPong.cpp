@@ -150,7 +150,7 @@ int SX1276PingPong()
     if (Radio->Init( &RadioEvents ) == false) {
         while(1) {
         	dprintf("Radio could not be detected!");
-        	wait( 1 );
+        	wait_ms(1000);
         }
     }
     
