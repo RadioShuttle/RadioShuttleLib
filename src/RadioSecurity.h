@@ -4,8 +4,8 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
-#include "sha256.h"
-#include "aes.h"
+#include "rs_sha256.h"
+#include "rs_aes.h"
 
 class RadioSecurity : public RadioSecurityInterface {
 public:
