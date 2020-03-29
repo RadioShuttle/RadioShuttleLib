@@ -12,14 +12,19 @@
 
 #ifdef __MBED__
 #include "mbed.h"
-#include "main.h"
 #include "PinMap.h"
 #endif
+
+#ifdef FEATURE_LORA
 
 #include "RadioSecurityInterface.h"
 #include "RadioSecurity.h"
 
-#ifdef FEATURE_LORA
+#ifndef DPRINTF_AVAILABLE
+#define	dprintf(...)	void()
+#define	dump(a,b,c)		void()
+#endif
+
 RadioSecurity::RadioSecurity(void)
 {
     

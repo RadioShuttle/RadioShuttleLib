@@ -29,9 +29,8 @@
  #define _RWSTD_INCREASE_CAPACITY(x) (x) // default is 1.6x
 #endif
 #include "mbed.h"
-#include "arch.h"
-#include "main.h"
 #include "PinMap.h"
+#include "main.h"
 #include "mbed-util.h"
 #endif
 #include "RadioShuttle.h"

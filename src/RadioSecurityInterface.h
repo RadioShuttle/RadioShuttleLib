@@ -4,7 +4,8 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
-
+#ifndef __RADIOSECURITYINTERFACE_H__
+#define __RADIOSECURITYINTERFACE_H__
 
 class RadioSecurityInterface {
 public:
@@ -55,3 +56,5 @@ public:
 
     virtual void EncryptTest(void) = 0;
 };
+
+#endif // __RADIOSECURITYINTERFACE_H__

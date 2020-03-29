@@ -12,8 +12,8 @@ License: Revised BSD License, see LICENSE.TXT file include in the project
 
 Maintainer: Miguel Luis and Gregory Cristian
 */
-#ifndef __SX1276PINGPONG_H__
-#define __SX1276PINGPONG_H__
+#ifndef __GENERICPINGPONG_H__
+#define __GENERICPINGPONG_H__
 
 #ifdef FEATURE_LORA_PING_PONG
  int SX1276PingPong(void);
@@ -58,4 +58,4 @@ void OnFhssChangeChannel(void *radio, void *userThisPtr, void *userData, uint8_t
  */
 void OnCadDone(void *radio, void *userThisPtr, void *userDataco);
 
-#endif // __MAIN_H__
+#endif // GenericPingPong.h

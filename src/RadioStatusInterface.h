@@ -4,7 +4,8 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
-
+#ifndef __RADIOSTATUSINTERFACE_H__
+#define __RADIOSTATUSINTERFACE_H__
 
 class RadioStatusInterface {
 public:
@@ -44,3 +45,5 @@ public:
     int _stationID;			/* automaticlally set */
     const char *_radioType;	/* automaticlally set */
 };
+
+#endif // __RADIOSTATUSINTERFACE_H__

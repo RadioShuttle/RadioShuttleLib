@@ -4,6 +4,9 @@
  * 30826 Garbsen (Hannover) Germany
  */
 
+#ifndef __RADIOSTATUS_H__
+#define __RADIOSTATUS_H__
+
 #if defined(ARDUINO_Heltec_WIFI_LoRa_32) || defined(ARDUINO_WIFI_LORA_32) \
 	 || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) \
 	 || defined(ARDUINO_ESP32_DEV) // the Heltec and ECO boards
@@ -61,3 +64,4 @@ private:
 #endif
 };
 
+#endif // __RADIOSTATUS_H__

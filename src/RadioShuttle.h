@@ -586,5 +586,5 @@ private:
     AppStartupHandler _receiveHandler;
 };
 
-#endif // __RADIOSHUTTLE_H__
 #endif // FEATURE_LORA
+#endif // __RADIOSHUTTLE_H__
