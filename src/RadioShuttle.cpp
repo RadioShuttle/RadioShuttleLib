@@ -1997,7 +1997,7 @@ RadioShuttle::TimeoutFunc()
         // dprintf("TimeoutDone: SetTimerCount=%d", SetTimerCount); // interrupt printing does not work reliable        
         list<RadioEntry>::iterator re;
         re = _radios.begin();
-        static char buf[34];
+        static char buf[40];
         snprintf(buf, sizeof(buf)-1, "TimeoutDone: SetTimerCount=%d", SetTimerCount);
         re->intrDelayedMsg = buf;
     }
