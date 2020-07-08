@@ -7,8 +7,6 @@
 #ifndef __RADIOSECURITY_H__
 #define __RADIOSECURITY_H__
 
-#include "rs_sha256.h"
-#include "rs_aes.h"
 
 class RadioSecurity : public RadioSecurityInterface {
 public:
