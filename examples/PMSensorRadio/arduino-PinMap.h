@@ -5,7 +5,7 @@
  */
 #ifdef ARDUINO 
 #define RS_MAJOR    3
-#define RS_MINOR    6
+#define RS_MINOR    8
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 
@@ -34,8 +34,8 @@
 // #define D21_LONGRA_REV_200  1		// board with Lipo power supply/charger, mini USB
 // #define D21_LONGRA_REV_301  1		// board with Lipo power supply/charger, micro USB
 // #define D21_LONGRA_REV_630  1		// board with Lipo power supply/charger, micro USB
-#define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
-// #define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
+// #define D21_LONGRA_REV_720  1		// Maker Faire Hannover revision, micro USB
+#define D21_LONGRA_REV_750  1		// LongRa revision with more pins, micro USB
 
 
 
@@ -43,6 +43,7 @@
 
 #define SW0      		  1   // switch needs pullup.
 #define LED       		0
+#define LED2          LED
 #define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA06?
@@ -78,7 +79,8 @@
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
-// For LongRa 7.2 new resistors are required before the following can be enabled
+#define EXT_POWER_ON    0
+#define EXT_POWER_OFF   1// For LongRa 7.2 new resistors are required before the following can be enabled
 // #define BAT_MESURE_EN   27            // Optional: turn for measurement PA28
 // #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 // #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
@@ -91,6 +93,7 @@
 
 #define SW0       		12              // PA19 switch needs pullup
 #define LED       		LED_BUILTIN     // PA17
+#define LED2          LED
 #define MYSERIAL    	SerialUSB
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PB10
@@ -108,6 +111,8 @@
 #define BOOSTER_EN33    9             // Enable 3.3 volt 150mA max
 #define BOOSTER_EN50    8             // Enable 5.0 volt 150mA max
 #define DISPLAY_EN      4             // Turn on display power (3.3 V must be enabled first)
+#define EXT_POWER_ON    0
+#define EXT_POWER_OFF   1
 #define BAT_MESURE_EN   45            // Opptional turn for measurement PA31/SWD
 #define BAT_MESURE_ADC  19            // Analog-in for battery measurement PB02/A5
 #define BAT_VOLTAGE_DIVIDER  ((82.0+220.0)/82.0) // 82k + 220k 1%
@@ -120,6 +125,7 @@
 
 #define SW0           12              // switch needs pullup, must be conected to the headers
 #define LED           LED_BUILTIN     // 13
+#define LED2          LED
 #define MYSERIAL      Serial          // this is a USB Serial, however the Feather M0 calls it only Serial.
 
 #define LORA_SPI_MOSI   PIN_SPI_MOSI  // PA12
@@ -199,15 +205,20 @@
 #endif
 
 #elif defined(ARDUINO_Heltec_WIFI_LoRa_32) \
-   || defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_WIFI_LORA_32_V2) \
+   || defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) \
    || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE) // the Heltec boards
 #define FEATURE_LORA  1
 
-#ifdef defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE)
+#if defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE)
  #define EXT_POWER_SW    Vext
  #define EXT_POWER_ON    0
  #define EXT_POWER_OFF   1
+
+ #define BAT_MESURE_EN   EXT_POWER_SW  // Turn power on for messurement
+ #define BAT_MESURE_ADC  37            // Analog-in for batterie measurement
+ #define BAT_VOLTAGE_DIVIDER  ((100.0+220.0)/100.0) // 100k + 220k 1%
 #else
+#erorr "bla else"
  #define EXT_POWER_SW   NC
 #endif
 
@@ -241,7 +252,7 @@
  #define DISPLAY_SDA     4
  #define DISPLAY_SCL     15
  #define DISPLAY_RESET   16
-#elif defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK)
+#elif defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK)
  #define DISPLAY_ADDRESS 0x3c
  #define DISPLAY_SDA     SDA_OLED
  #define DISPLAY_SCL     SCL_OLED

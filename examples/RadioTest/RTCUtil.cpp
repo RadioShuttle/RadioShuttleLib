@@ -159,21 +159,33 @@ uint64_t ESP32WakeupGPIOStatus;
 Adafruit_Si7021 *sensorSI7021;  
 #endif
 
-#ifdef ESP32_ECO_POWER_REV_1
+#if defined(ESP32_ECO_POWER_REV_1) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2)
 float GetBatteryVoltage(bool print)
 {
   int adcBits = 12;
   int adcSampleCount = 12;
   float volt = 0;
-  float vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
+  float correct = 0;
+  float vref;
+#ifdef ARDUINO_HELTEC_WIFI_LORA_32_V2
+  vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
+  vref = (vref / 1.100) * 1.995;
+  adc_attenuation_t adc_attn = ADC_6db;
+  correct = 0.006;
+#else
+  vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
+  adc_attenuation_t adc_attn = ADC_0db;
+  correct = -0.065;
+#endif
 
- #ifdef BAT_MESURE_EN
+
+#ifdef BAT_MESURE_EN
   DigitalOut extPWR(BAT_MESURE_EN);
   extPWR = EXT_POWER_ON;
 #endif
   
   analogReadResolution(adcBits);
-  analogSetPinAttenuation(BAT_MESURE_ADC, ADC_0db); //  1.124 Volt ID 132, 
+  analogSetPinAttenuation(BAT_MESURE_ADC, adc_attn); 
   
   float adcValue = 0;
   for (int i = 0; i < adcSampleCount; i++) {
@@ -191,7 +203,7 @@ float GetBatteryVoltage(bool print)
 
   float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
   volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
-  volt -= 0.065; // correction in millivolts
+  volt += correct; // correction in millivolts
   
   if (print)
     dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, (int)adcValue, vref); 
@@ -209,6 +221,9 @@ void RTCInit(const char *date, const char *timestr)
 {
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
   Wire.begin();
+#endif
+#if defined (ARDUINO_HELTEC_WIFI_LORA_32_V2)
+  delay(50); // needs time to flush bootloader garbage
 #endif
   NTPUpdate ntp;
 

@@ -153,7 +153,7 @@ int InitRadio()
 {
   RSCode err;
 
-#ifdef ARDUINO_WIRELESS_STICK_LITE
+#if defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK) || defined(ARDUINO_WIRELESS_STICK_LITE)
   // Vext power switch active
   radio = new SX1276Generic(NULL, HELTEC_L4_1276,
                             LORA_SPI_MOSI, LORA_SPI_MISO, LORA_SPI_SCLK, LORA_CS, LORA_RESET,

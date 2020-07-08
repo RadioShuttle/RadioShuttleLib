@@ -14,6 +14,7 @@
 #elif ARDUINO_ARCH_ESP32
 #include <rom/rtc.h>
 #include <driver/adc.h>
+#include <NTPUpdate.h>
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
  #include <Wire.h>
 #endif
@@ -54,7 +55,7 @@ bool ESP32DeepsleepWakeup;
 #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)
 
 #ifdef BAT_MESURE_ADC
-float GetBatteryVoltage(void)
+float GetBatteryVoltage(bool print)
 {
 #ifdef D21_LONGRA_REV_750
   if (DSU->STATUSB.bit.DBGPRES) // skip this when the debugger uses the SWD pin
@@ -83,7 +84,8 @@ float GetBatteryVoltage(void)
   float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
   volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
 
-  dprintf("Power: %s (ADC: %d Vref: %s)", String(volt).c_str(), (int)adcValue, String(vref, 3).c_str()); 
+  if (print)
+    dprintf("Power: %s (ADC: %d Vref: %s)", String(volt).c_str(), (int)adcValue, String(vref, 3).c_str()); 
 
 #ifdef BAT_MESURE_EN
   DigitalIn swdin2(BAT_MESURE_EN);
@@ -143,48 +145,66 @@ void RTCInit(const char *date, const char *timestr)
 #ifdef BAT_MESURE_ADC
   GetBatteryVoltage();
 #endif
+  /*
+   * the default is 32 secs, at present it cannot be changed.
+   */
   InitWatchDog();
 }
 
 #elif ARDUINO_ARCH_ESP32 
 
+uint64_t ESP32WakeupGPIOStatus;
+
 #ifdef FEATURE_SI7021
 Adafruit_Si7021 *sensorSI7021;  
 #endif
 
-#ifdef ESP32_ECO_POWER_REV_1
-float GetBatteryVoltage()
+#if defined(ESP32_ECO_POWER_REV_1) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2)
+float GetBatteryVoltage(bool print)
 {
-#ifdef BAT_MESURE_EN
-  DigitalOut extPWR(BAT_MESURE_EN);
-  extPWR = EXT_POWER_ON;
-#endif
   int adcBits = 12;
   int adcSampleCount = 12;
   float volt = 0;
+#ifdef ARDUINO_HELTEC_WIFI_LORA_32_V2
   float vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
+  vref = (vref / 1.100) * 1.995;
+  adc_attenuation_t adc_attn = ADC_6db;
+  float correct = 0.006;
+#else
+  float vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
+  adc_attenuation_t adc_attn = ADC_0db;
+  float correct = -0.065
+#endif
 
+
+ #ifdef BAT_MESURE_EN
+  DigitalOut extPWR(BAT_MESURE_EN);
+  extPWR = EXT_POWER_ON;
+#endif
+  
   analogReadResolution(adcBits);
-  analogSetPinAttenuation(BAT_MESURE_ADC, ADC_0db); //  1.124 Volt ID 132, 
+  analogSetPinAttenuation(BAT_MESURE_ADC, adc_attn); 
   
   float adcValue = 0;
   for (int i = 0; i < adcSampleCount; i++) {
     adcValue += analogRead(BAT_MESURE_ADC); // BAT_MESURE_ADC is ADC1
   }
-  adcValue /= (float)adcSampleCount;
-  adcValue += 0.5; // for proper rounding.
-
-  float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
-  volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
-  
-  volt -= 0.065; // correction in millivolts
-  dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, (int)adcValue, vref); 
 
 #ifdef BAT_MESURE_EN
   extPWR = EXT_POWER_OFF; 
   DigitalIn tmpPWR(BAT_MESURE_EN);
   tmpPWR.mode(PullUp); // turn off the power, PullUp will keep it off in deepsleep
-#endif
+#endif  
+  
+  adcValue /= (float)adcSampleCount;
+  adcValue += 0.5; // for proper rounding.
+
+  float voltstep = vref/(float)(1<<adcBits); // e.g. 12 bit 4096
+  volt = (float) (adcValue * voltstep) * BAT_VOLTAGE_DIVIDER; // 82k, 82k+220k
+  volt += correct; // correction in millivolts
+  
+  if (print)
+    dprintf("Power: %.2fV (ADC: %d Vref: %.3f)", volt, (int)adcValue, vref); 
   return volt;
 }
 
@@ -193,12 +213,17 @@ float GetBatteryVoltage()
 RTC_DATA_ATTR int bootCount = 0;
 RTC_DATA_ATTR bool hasSensor;
 
+void RTCUpdateHandler(void);
 
 void RTCInit(const char *date, const char *timestr)
 {
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
   Wire.begin();
 #endif
+#if defined (ARDUINO_HELTEC_WIFI_LORA_32_V2)
+  delay(50); // needs time to flush bootloader garbage
+#endif
+  NTPUpdate ntp;
 
   time_t now = time(NULL);
   
@@ -208,7 +233,9 @@ void RTCInit(const char *date, const char *timestr)
   DS3231_get(&ds);
   if (!now || now < ds.unixtime || now > ds.unixtime) {
     time_t t = cvt_date(date, timestr);
-    if (!ds.unixtime || t > ds.unixtime) {
+    t -= (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t)); // convert to UTC
+
+    if (!ds.unixtime || t > ds.unixtime ) {
       struct tm *tmp = gmtime(&t);
       ds.sec = tmp->tm_sec;
       ds.min = tmp->tm_min;
@@ -231,28 +258,33 @@ void RTCInit(const char *date, const char *timestr)
     tv.tv_sec = ds.unixtime;
     struct timezone tz;
     memset(&tz, 0, sizeof(tz));
-    tz.tz_minuteswest = 0;
-    tz.tz_dsttime = 0;
-    settimeofday(&tv, &tz);    
-    dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
+    tz.tz_minuteswest = (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t)/60);
+    tz.tz_dsttime = 1;
+    ntp.SetTimeZone(tv.tv_sec);
+    settimeofday(&tv, &tz);
+    dprintf("RTC Clock: %d/%d/%d %02d:%02d:%02d UTC", ds.mday, ds.mon, ds.year, ds.hour, ds.min, ds.sec);
   }
   int i = prop.GetProperty(prop.RTC_AGING_CAL, 0);
   if (i && i != DS3231_get_aging())
     DS3231_set_aging(i);
+  ntp.SetRTCUpdateProc(&RTCUpdateHandler);
 #else // without ds3231
-  if (!now)) {
+  if (!now) {
     time_t t = cvt_date(date, timestr);
+    t -= (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t)); // convert to UTC
     struct timeval tv;
     memset(&tv, 0, sizeof(tv));
     tv.tv_sec = t;
     struct timezone tz;
     memset(&tz, 0, sizeof(tz));
-    tz.tz_minuteswest = 0;
-    tz.tz_dsttime = 0;
+    tz.tz_minuteswest = (ntp.GetGMTOffset() +  ntp.GetDayLightOffset(t))/60;
+    tz.tz_dsttime = 1;
+    ntp.SetTimeZone(tv.tv_sec);
     settimeofday(&tv, &tz);
   }
 #endif
 
+  ESP32WakeupGPIOStatus = ESP32WakeupGPIOStatusLow | (uint64_t) ESP32WakeupGPIOStatusHigh << 32;
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   if (wakeup_reason)
     dprintf("Boot: %s (bootCount: %d)", ESP32WakeUpReason(wakeup_reason), ++bootCount);
@@ -295,6 +327,33 @@ void RTCInit(const char *date, const char *timestr)
      }
 #endif
   }
+  /*
+   * the default of two minutes should be fine for networking hangs,  etc.
+   * specify optional parameter in ms e.g.:(120 * 1000) 
+   */
+  InitWatchDog(); 
+}
+
+void
+RTCUpdateHandler(void)
+{
+  /*
+   * will be called when the RTCUpdate issues an update.
+   */
+#ifdef FEATURE_RTC_DS3231
+  time_t t = time(NULL);
+  struct ts ds;
+  struct tm *tmp = gmtime(&t);
+  ds.sec = tmp->tm_sec;
+  ds.min = tmp->tm_min;
+  ds.hour = tmp->tm_hour;
+  ds.wday = tmp->tm_wday;
+  ds.mday = tmp->tm_mday;
+  ds.mon = tmp->tm_mon + 1;
+  ds.year =  tmp->tm_year + 1900;
+  DS3231_set(ds);
+  dprintf("RTC update issued");
+#endif
 }
 
 #else
@@ -302,4 +361,3 @@ void RTCInit(const char *date, const char *timestr)
 #endif
 #endif // FEATURE_LORA
 #endif // ARDUINO 
-
