@@ -1,6 +1,6 @@
 
 #include "mbed.h"
-#include "PinMap.h"
+#include "xPinMap.h"
 #include "GenericPingPong.h"
 #if defined(DEVICE_LPTICKER) || defined(DEVICE_LOWPOWERTIMER) // LOWPOWERTIMER in older mbed versions
 #define MyTimeout LowPowerTimeout

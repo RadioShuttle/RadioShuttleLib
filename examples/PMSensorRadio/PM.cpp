@@ -5,7 +5,7 @@
 */
 #ifdef ARDUINO
 
-#include "PinMap.h"
+#include "xPinMap.h"
 #include <Arduino.h>
 #include <arduino-mbed.h>
 #include <arduino-util.h>

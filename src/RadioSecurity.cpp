@@ -12,7 +12,7 @@
 
 #ifdef __MBED__
 #include "mbed.h"
-#include "PinMap.h"
+#include "xPinMap.h"
 #endif
 
 #ifdef FEATURE_LORA

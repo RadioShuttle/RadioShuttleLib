@@ -6,7 +6,7 @@
 
 #ifdef ARDUINO 
 
-#include "PinMap.h"
+#include "xPinMap.h"
 #include <arduino-mbed.h>
 #include <arduino-util.h>
 #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)

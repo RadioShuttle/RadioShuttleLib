@@ -5,7 +5,7 @@
  */
 
 #include "mbed.h"
-#include "PinMap.h"
+#include "xPinMap.h"
 #include "sx1276-mbed-hal.h"
 #include "RadioShuttle.h"
 #include "RadioStatus.h"

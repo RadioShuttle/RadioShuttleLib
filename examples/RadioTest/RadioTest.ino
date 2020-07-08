@@ -22,7 +22,7 @@
   * For AES128-bit content encryption, in addition to a password, set useAES = true (in line 46)
   */
 
-#include "PinMap.h"
+#include "xPinMap.h"
 #include <arduino-mbed.h>
 #include <sx1276-mbed-hal.h>
 #include <RadioShuttle.h>

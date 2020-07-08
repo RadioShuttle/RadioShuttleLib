@@ -29,7 +29,7 @@
  #define _RWSTD_INCREASE_CAPACITY(x) (x) // default is 1.6x
 #endif
 #include "mbed.h"
-#include "PinMap.h"
+#include "xPinMap.h"
 #include "main.h"
 #include "mbed-util.h"
 #endif

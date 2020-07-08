@@ -13,7 +13,7 @@
 #endif
 #ifdef __MBED__
 #include "mbed.h"
-#include "PinMap.h"
+#include "xPinMap.h"
 #endif
 #include "RadioStatusInterface.h"
 #include "RadioStatus.h"
