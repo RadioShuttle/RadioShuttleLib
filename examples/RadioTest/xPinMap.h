@@ -4,8 +4,8 @@
  * 30826 Garbsen (Hannover) Germany
  */
 #ifdef ARDUINO 
-#define RS_MAJOR    3
-#define RS_MINOR    8
+#define RS_MAJOR    4
+#define RS_MINOR    0
 
 #ifdef ARDUINO_SAMD_ATMEL_SAMD21_XPRO_V1
 

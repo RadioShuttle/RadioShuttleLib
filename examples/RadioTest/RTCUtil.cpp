@@ -22,7 +22,7 @@
  #include "ds3231.h"
 #endif
 #ifdef FEATURE_SI7021
-  #include "Adafruit_Si7021.h"
+  #include "HELIOS_Si7021.h"
 #endif
 #endif
 #if LORA_CS != NC
@@ -156,7 +156,7 @@ void RTCInit(const char *date, const char *timestr)
 uint64_t ESP32WakeupGPIOStatus;
 
 #ifdef FEATURE_SI7021
-Adafruit_Si7021 *sensorSI7021;  
+HELIOS_Si7021 *sensorSI7021;  
 #endif
 
 #if defined(ESP32_ECO_POWER_REV_1) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2)
@@ -308,8 +308,8 @@ void RTCInit(const char *date, const char *timestr)
 #endif
 
 #ifdef FEATURE_SI7021
-  sensorSI7021 = new Adafruit_Si7021();
-  if (sensorSI7021->begin()) {
+  sensorSI7021 = new HELIOS_Si7021();
+  if (sensorSI7021->hasSensor()) {
       hasSensor = true;
       dprintf("%s: Rev(%d)  %.2f°C  Humidity: %.2f%%", sensorSI7021->getModelName(), sensorSI7021->getRevision(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
   } else {
@@ -324,7 +324,7 @@ void RTCInit(const char *date, const char *timestr)
      ESP32DeepsleepWakeup = true;
  #ifdef FEATURE_SI7021
     if (hasSensor) {
-       sensorSI7021 = new Adafruit_Si7021();
+       sensorSI7021 = new HELIOS_Si7021();
        dprintf("%s: %.2f°C  Humidity: %.2f%%", sensorSI7021->getModelName(), sensorSI7021->readTemperature(), sensorSI7021->readHumidity());
      }
 #endif
