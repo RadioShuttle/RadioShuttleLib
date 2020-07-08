@@ -20,6 +20,9 @@
 #include "RadioSecurityInterface.h"
 #include "RadioSecurity.h"
 
+#include "rs_sha256.h"
+#include "rs_aes.h"
+
 #ifndef DPRINTF_AVAILABLE
 #define	dprintf(...)	void()
 #define	dump(a,b,c)		void()
