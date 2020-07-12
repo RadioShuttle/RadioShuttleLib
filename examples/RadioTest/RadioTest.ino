@@ -331,10 +331,10 @@ void loop() {
 
     if (server) {
       static char msg[] = "The server feels very good today";
-      rs->SendMsg(myTempSensorApp, msg, sizeof(msg), flags, remoteDeviceID);
+      rs->SendMsg(myTempSensorApp, msg, sizeof(msg)-1, flags, remoteDeviceID);
     } else {
       static char msg[] = "Hello, the temperature is 26 celsius";
-      rs->SendMsg(myTempSensorApp, msg, sizeof(msg), flags, remoteDeviceID);
+      rs->SendMsg(myTempSensorApp, msg, sizeof(msg)-1, flags, remoteDeviceID);
     }
     cnt = pressedCount;
   }

@@ -120,6 +120,7 @@
 #define DISPLAY_SDA     SDA
 #define DISPLAY_SCL     SCL
 #define DISPLAY_ADDRESS 0x3c
+#define DISPLAY_RESET	NC
 
 #elif defined(ARDUINO_SAMD_FEATHER_M0) // Feather M0 w/Radio
 
@@ -195,6 +196,7 @@
 #define DISPLAY_SDA     SDA
 #define DISPLAY_SCL     SCL
 #define DISPLAY_ADDRESS 0x3c
+#define DISPLAY_RESET	NC
 
 #else
 
@@ -251,6 +253,7 @@
  #define DISPLAY_SDA     4
  #define DISPLAY_SCL     15
  #define DISPLAY_RESET   16
+ 
 #elif defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_WIRELESS_STICK)
  #define DISPLAY_ADDRESS 0x3c
  #define DISPLAY_SDA     SDA_OLED
