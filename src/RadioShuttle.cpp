@@ -1992,7 +1992,7 @@ RadioShuttle::RS_CadDone(Radio *radio, void *userData, bool channelActivityDetec
 
 
 void
-RadioShuttle::TimeoutFunc()
+IRAM_ATTR RadioShuttle::TimeoutFunc()
 {
     InterruptMSG(INT_LORA);
     SetTimerCount++;

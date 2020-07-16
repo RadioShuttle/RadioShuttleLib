@@ -35,6 +35,7 @@ using namespace std;
 #define MyTimeout Timeout
 #define MyTimer	Timer
 #endif
+#define IRAM_ATTR
 
 #endif
 
