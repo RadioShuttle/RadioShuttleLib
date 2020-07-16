@@ -476,7 +476,7 @@ RadioShuttle::SendMsg(int AppID, void *data, int len, int flags, devid_t station
     }
     aep = &it->second;
     
-    if (aep->password && !(flags & MF_Connect)) {
+    if (!(flags & MF_Direct) && aep->password && !(flags & MF_Connect)) {
         map<pair<devid_t,int>, ConnectEntry>::iterator ce = _connections.find(pair<devid_t,int>(stationID, AppID));
         
         if (ce == _connections.end()) {
@@ -525,7 +525,10 @@ RadioShuttle::SendMsg(int AppID, void *data, int len, int flags, devid_t station
         *msgID = r.msgID;
     r.cep = cop;
     r.aep = aep;
-    r.pStatus = PS_Queued;
+    if (flags & MF_Direct)
+    	r.pStatus =  PS_GotSendSlot;
+    else
+    	r.pStatus = PS_Queued;
 
     _sends.push_back(r);
     RunShuttle();
@@ -1782,8 +1785,8 @@ RadioShuttle::PacketTrace(RadioEntry *re, const char *name, RadioHeader *rh, voi
         AddFlagStr("LowP|");
     if (rh->msgFlags & MF_HighPriority)
         AddFlagStr("HighP|");
-    if (rh->msgFlags & MF_MoreDataToCome)
-        AddFlagStr("More|");
+    if (rh->msgFlags & MF_Direct)
+        AddFlagStr("dir|");
     if (rh->msgFlags & MF_Connect)
         AddFlagStr("Con|");
     if (rh->msgFlags & MF_Encrypted)

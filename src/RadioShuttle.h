@@ -119,7 +119,7 @@ public:
         MF_NeedsConfirm		= 0x02, // Station needs to acknloglage receivd
         MF_LowPriority		= 0x04, // Transfer within one minute
         MF_HighPriority		= 0x08, // ImmEdate transfer
-        MF_MoreDataToCome	= 0x10, // Additional data is wait to be sent
+        MF_Direct			= 0x10, // Direct communication without request
         MF_Connect			= 0x20, // Connect a node to the station with password
         MF_Encrypted		= 0x40, // Message is encrypted
         MF_Authentication	= 0x80,	// Message requires prior authentication
