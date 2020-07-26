@@ -181,7 +181,7 @@ public:
     RSCode AddRadio(Radio *radio, RadioModems_t modem, const struct RadioProfile *profile = NULL, int customRetryDelay_ms = 0);
     
     /*
-     * This allows to swtich between RS_Node_Offline and RS_Node_Online
+     * This allows to switch between RS_Node_Offline and RS_Node_Online
      * after the Startup() is already completed.
      */
     RSCode UpdateNodeStartup(RadioType newRadioType);
