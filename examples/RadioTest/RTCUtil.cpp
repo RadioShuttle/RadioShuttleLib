@@ -9,6 +9,7 @@
 #include "xPinMap.h"
 #include <arduino-mbed.h>
 #include <arduino-util.h>
+#include <NVProperty_Editor.h>
 #if defined(ARDUINO_SAMD_ZERO) || defined(ARDUINO_ARCH_SAMD)
 #include <RTCZero.h>
 #elif ARDUINO_ARCH_ESP32
@@ -32,6 +33,8 @@
 #ifdef FEATURE_LORA
 
 NVProperty prop; // global property store supports OTP, Flash and SRAM
+static void InitPropertyEditor(InterruptIn *intrButton);
+
 
 void InitLoRaChipWithShutdown()
 {
@@ -117,7 +120,7 @@ void alarmMatch()
   rtc.enableAlarm(rtc.MATCH_SS);
 }
 
-void RTCInit(const char *date, const char *timestr)
+void RTCInit(const char *date, const char *timestr, InterruptIn *intrButton)
 {
   rtc.begin();
   rtc.attachInterrupt(alarmMatch);
@@ -149,6 +152,15 @@ void RTCInit(const char *date, const char *timestr)
    * the default is 32 secs, at present it cannot be changed.
    */
   InitWatchDog();
+  InitPropertyEditor(intrButton);
+}
+
+bool runPropertyEdtior()
+{
+	NVPropertyEditorInit(&MYSERIAL);
+	NVPropertyEditor();
+	NVIC_SystemReset();
+	return false;
 }
 
 #elif ARDUINO_ARCH_ESP32 
@@ -217,7 +229,7 @@ RTC_DATA_ATTR bool hasSensor;
 
 void RTCUpdateHandler(void);
 
-void RTCInit(const char *date, const char *timestr)
+void RTCInit(const char *date, const char *timestr, InterruptIn *intrButton)
 {
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
   Wire.begin();
@@ -333,7 +345,8 @@ void RTCInit(const char *date, const char *timestr)
    * the default of two minutes should be fine for networking hangs,  etc.
    * specify optional parameter in ms e.g.:(120 * 1000) 
    */
-  InitWatchDog(); 
+  InitWatchDog();
+  InitPropertyEditor(intrButton);
 }
 
 void
@@ -358,8 +371,63 @@ RTCUpdateHandler(void)
 #endif
 }
 
+bool runPropertyEdtior()
+{
+	NVPropertyEditorInit(&MYSERIAL);
+	NVPropertyEditor();
+	esp_restart();
+	return false;
+}
+
 #else
 #error "Unkown platform"
 #endif
+
+
+/*
+ * The automatic property editor startup:
+ * When the RTCInit is being called with a button parameter
+ * the InitPropertyEditor installs a Timer called every second.
+ * The userButtonTimerFunc will check if the button is hold down
+ * for 5 continues seconds and installs a callback to start
+ * the editor later via sleep/deepsleep code within the loop.
+ * We cannot call the Editor within the Interrupt function,
+ * therefore the sleep/deepsleep processing calls the
+ * runPropertyEdtior function via the registered callback.
+ */
+RTC_DATA_ATTR int buttonCount = 0;
+RTC_DATA_ATTR int timerCount = 0;
+
+Timeout *userButtonTimer;
+InterruptIn *userButtonIntr;
+
+static void userButtonTimerFunc(void)
+{
+	if (timerCount++ >= 10) {
+		userButtonTimer->detach();
+		return;
+	}
+	userButtonTimer->attach(callback(&userButtonTimerFunc), 1000);
+	if (userButtonIntr->read() == 0)
+		buttonCount++;
+	else
+		buttonCount = 0;
+
+	if (buttonCount >= 5) {
+		userButtonTimer->detach();
+		idleCbs.RegisterIdeCallback(callback(&runPropertyEdtior));
+	}
+}
+
+static void InitPropertyEditor(InterruptIn *intrButton)
+{
+	if (!intrButton)
+		return;
+	userButtonIntr = (InterruptIn *)intrButton;
+	if (!userButtonTimer)
+		userButtonTimer = new Timeout;
+	userButtonTimerFunc(); //  start Timer
+}
+
 #endif // FEATURE_LORA
 #endif // ARDUINO 
