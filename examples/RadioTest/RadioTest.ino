@@ -134,7 +134,7 @@ DigitalOut led(LED);
  * A callback() wrapper is required to provide C or C++ handlers
  * (compatible with mbed.org).
  */
-InterruptIn intr(SW0);
+InterruptIn userKeyIntr(SW0);
 volatile int pressedCount = 0;
 
 void SwitchInput(void) {
@@ -232,24 +232,24 @@ void DeInitRadio()
 
 
 void setup() {
-  intr.mode(PullUp);
-  intr.debounce();
+  userKeyIntr.mode(PullUp);
+  userKeyIntr.debounce();
   MYSERIAL.begin(115200);
-  InitSerial(&MYSERIAL, 5000, &led, !intr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
+  InitSerial(&MYSERIAL, 5000, &led, !userKeyIntr.read()); // wait 5000ms that the Serial Monitor opens, otherwise turn off USB, use 0 for USB always on.
   SPI.begin();
-  RTCInit(__DATE__, __TIME__);
+  RTCInit(__DATE__, __TIME__, &userKeyIntr);
 
   led = 1;
   
   bool nodeOffline = prop.GetProperty(prop.LORA_RADIO_TYPE, 0) == RadioShuttle::RS_Node_Offline;
   if (!SerialUSB_active && nodeOffline) {
 #ifdef ARDUINO_SAMD_ZERO
-    intr.low(callback(&SwitchInput)); // in deepsleep, D21 supports only low/high.
+    userKeyIntr.low(callback(&SwitchInput)); // in deepsleep, D21 supports only low/high.
 #else
-    intr.fall(callback(&SwitchInput));
+    userKeyIntr.fall(callback(&SwitchInput));
 #endif
   } else {
-   intr.fall(callback(&SwitchInput));
+   userKeyIntr.fall(callback(&SwitchInput));
   }
 
   if (ESP32DeepsleepWakeup) {
