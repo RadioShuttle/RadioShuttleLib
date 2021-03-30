@@ -270,7 +270,7 @@ RadioShuttle::UpdateNodeStartup(RadioType newRadioType)
         if (this->Idle() && newRadioType == RS_Node_Offline) {
             re->radio->Sleep();
         if (this->Idle() && newRadioType == RS_Node_Online)
-            re->radio->Rx(RX_TIMEOUT_1HOUR);
+            re->radio->Rx(RX_TIMEOUT_30MIN);
         }
     }
     _radioType = newRadioType;
@@ -325,7 +325,7 @@ RadioShuttle::_initRadio(RadioEntry *re)
     if (_radioType == RS_Node_Offline || _radioType == RS_Node_Checking)
         re->radio->Sleep();
     else
-        re->radio->Rx(RX_TIMEOUT_1HOUR);
+        re->radio->Rx(RX_TIMEOUT_30MIN);
     
     re->rStats.startupTime = time(NULL);
     re->maxTimeOnAir = re->radio->TimeOnAir(re->modem, re->radio->MaxMTUSize(re->modem));
@@ -1874,7 +1874,7 @@ RadioShuttle::RS_TxDone(Radio *radio, void *userData)
 	re->rStats.txBytes += re->lastTxSize;
 	re->lastTxDone = ticker->read_ms();
 	re->txDoneReceived = true;
-	re->radio->Rx(RX_TIMEOUT_1HOUR);
+	re->radio->Rx(RX_TIMEOUT_30MIN);
 
     if (_wireDumpSettings.sents) {
         // dprintf("TxDone"); // interrupt printing does not work reliable
@@ -1915,7 +1915,7 @@ RadioShuttle::RS_RxDone(Radio *radio, void *userData, uint8_t *payload, uint16_t
      * function overcomes the problem. Helmut
      */
     re->radio->Standby();
-    re->radio->Rx(RX_TIMEOUT_1HOUR);
+    re->radio->Rx(RX_TIMEOUT_30MIN);
 }
 
 
@@ -1940,7 +1940,7 @@ RadioShuttle::RS_RxTimeout(Radio *radio, void *userData)
 {
 	UNUSED(radio);
     RadioEntry *re = (RadioEntry *)userData;
-    re->radio->Rx(RX_TIMEOUT_1HOUR);
+    re->radio->Rx(RX_TIMEOUT_30MIN);
     
     if (_wireDumpSettings.recvs) {
         // dprintf("RxTimeout"); // interrupt printing does not work reliable
@@ -1961,7 +1961,7 @@ RadioShuttle::RS_RxError(Radio *radio, void *userData)
      * It looks like this happens when sender/receiver are close to each other.
      */
     re->radio->Sleep();
-    re->radio->Rx(RX_TIMEOUT_1HOUR);
+    re->radio->Rx(RX_TIMEOUT_30MIN);
     
     if (_wireDumpSettings.recvs) {
         // dprintf("RxError"); // interrupt printing does not work reliable

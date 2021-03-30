@@ -580,7 +580,7 @@ private:
     volatile bool busyInShuttle;
     WireDumpSettings _wireDumpSettings;
     const static int MAX_SENT_RETRIES = 3;	// Defines the number of retries of sents (with confirm)
-    const static int RX_TIMEOUT_1HOUR	= 3600000;
+    const static int RX_TIMEOUT_30MIN = 30*60*1000; // Mbed OS timers do not allow more 2^31-1 us
     RadioStatusInterface *_statusIntf;
     RadioSecurityInterface *_securityIntf;
     AppStartupHandler _startupHandler;
