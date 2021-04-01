@@ -207,11 +207,11 @@
 #endif
 
 #elif defined(ARDUINO_Heltec_WIFI_LoRa_32) \
-   || defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) \
+   || defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2) \
    || defined(ARDUINO_HELTEC_WIRELESS_STICK) || defined(ARDUINO_HELTEC_WIRELESS_STICK_LITE) // the Heltec boards
 #define FEATURE_LORA  1
 
-#if defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_HELTEC_WIRELESS_STICK) || defined(ARDUINO_HELTEC_WIRELESS_STICK_LITE)
+#if defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2) || defined(ARDUINO_HELTEC_WIRELESS_STICK) || defined(ARDUINO_HELTEC_WIRELESS_STICK_LITE)
  #define EXT_POWER_SW    Vext
  #define EXT_POWER_ON    0
  #define EXT_POWER_OFF   1
@@ -254,7 +254,7 @@
  #define DISPLAY_SCL     15
  #define DISPLAY_RESET   16
  
-#elif defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_HELTEC_WIRELESS_STICK)
+#elif defined(ARDUINO_WIFI_LORA_32) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2) || defined(ARDUINO_HELTEC_WIRELESS_STICK)
  #define DISPLAY_ADDRESS 0x3c
  #define DISPLAY_SDA     SDA_OLED
  #define DISPLAY_SCL     SCL_OLED

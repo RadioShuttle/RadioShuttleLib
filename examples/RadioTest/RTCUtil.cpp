@@ -171,7 +171,7 @@ uint64_t ESP32WakeupGPIOStatus;
 HELIOS_Si7021 *sensorSI7021;  
 #endif
 
-#if defined(ESP32_ECO_POWER_REV_1) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_HELTEC_WIRELESS_STICK)
+#if defined(ESP32_ECO_POWER_REV_1) || defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2) || defined(ARDUINO_HELTEC_WIRELESS_STICK)
 float GetBatteryVoltage(bool print)
 {
   int adcBits = 12;
