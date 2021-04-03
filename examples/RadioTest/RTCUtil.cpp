@@ -179,15 +179,15 @@ float GetBatteryVoltage(bool print)
   float volt = 0;
   float correct = 0;
   float vref;
-#ifdef ARDUINO_HELTEC_WIFI_LORA_32_V2
+#if defined(ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2)
   vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
   vref = (vref / 1.100) * 1.995;
   adc_attenuation_t adc_attn = ADC_6db;
-  correct = 0.006;
+  correct = -0.18;
 #else
   vref = (float)prop.GetProperty(prop.ADC_VREF, 1100)/1000.0;
   adc_attenuation_t adc_attn = ADC_0db;
-  correct = -0.065;
+  correct = -0.22;
 #endif
 
 
@@ -197,8 +197,9 @@ float GetBatteryVoltage(bool print)
 #endif
   
   analogReadResolution(adcBits);
+  analogSetAttenuation(adc_attn);
   analogSetPinAttenuation(BAT_MESURE_ADC, adc_attn); 
-  
+
   float adcValue = 0;
   for (int i = 0; i < adcSampleCount; i++) {
     adcValue += analogRead(BAT_MESURE_ADC); // BAT_MESURE_ADC is ADC1
@@ -234,7 +235,7 @@ void RTCInit(const char *date, const char *timestr, InterruptIn *intrButton)
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
   Wire.begin();
 #endif
-#if defined (ARDUINO_HELTEC_WIFI_LORA_32_V2)
+#if defined (ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2)
   delay(50); // needs time to flush bootloader garbage
 #endif
   NTPUpdate ntp;
