@@ -235,8 +235,8 @@ void RTCInit(const char *date, const char *timestr, InterruptIn *intrButton)
 #if defined (FEATURE_SI7021) || defined (FEATURE_RTC_DS3231)
   Wire.begin();
 #endif
-#if defined (ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2)
-  delay(50); // needs time to flush bootloader garbage
+#if defined (ARDUINO_HELTEC_WIFI_LORA_32_V2) || defined(ARDUINO_heltec_wifi_lora_32_V2) || defined(ARDUINO_ESP32C3_DEV)
+  delay(100); // needs time to flush bootloader garbage
 #endif
   NTPUpdate ntp;
 
@@ -304,8 +304,9 @@ void RTCInit(const char *date, const char *timestr, InterruptIn *intrButton)
   if (wakeup_reason)
     dprintf("Boot: %s (bootCount: %d)", ESP32WakeUpReason(wakeup_reason), ++bootCount);
   dprintf("Boot: CPU(Pro): %s", ESP32ResetReason(rtc_get_reset_reason(0)));
-  dprintf("Boot: CPU(App): %s", ESP32ResetReason(rtc_get_reset_reason(1)));
-  dprintf("ESP32: Rev: %d, %d MHz, IDF(%s)", ESP.getChipRevision(), ESP32Frequency()/1000000,  esp_get_idf_version());
+  if (ESP.getChipCores() == 2)
+    dprintf("Boot: CPU(App): %s", ESP32ResetReason(rtc_get_reset_reason(1)));
+  dprintf("%s: Rev: %d, %d MHz, IDF(%s)", ESP.getChipModel(), ESP.getChipRevision(), ESP.getCpuFreqMHz(),  ESP.getSdkVersion());
 
 
   if (wakeup_reason == ESP_SLEEP_WAKEUP_UNDEFINED) { 
