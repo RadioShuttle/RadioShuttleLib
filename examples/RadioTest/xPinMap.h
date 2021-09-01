@@ -261,6 +261,25 @@
  #define DISPLAY_RESET   RST_OLED
 #endif
 
+#elif defined(ARDUINO_ESP32S2_DEV) || defined(ARDUINO_ESP32S2_USB)	// the ESP32 S2 DevKit Boards
+
+#define FEATURE_LORA  1
+
+#define SW0           0				// no pullup, TODO check setup code
+#define LED	          2				// no LED connected
+#define LED2          LED
+#define MYSERIAL      Serial		// the regular serial IO1_TXD0/IO3_RXD0
+
+#elif defined(ARDUINO_ESP32C3_DEV) // the ESP32-C3-DevKitM-1 Boards
+
+#define FEATURE_LORA  1
+
+#define SW0           9				// no pullup, TODO check setup code
+#define LED	          2				// no LED connected
+#define LED2          LED
+#define MYSERIAL      Serial		// the regular serial IO1_TXD0/IO3_RXD0
+
+
 #else 
 #error "unkown board"
 #endif
